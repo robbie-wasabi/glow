@@ -5,58 +5,15 @@ import (
 
 	"testing"
 
-	. "github.com/rrossilli/glow/model"
-
 	. "github.com/rrossilli/glow/client"
 
 	"github.com/onflow/cadence"
-	"github.com/onflow/flow-go-sdk"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 const (
 	GENERATE_KEYS_SEED_PHRASE = "elephant ears space cowboy octopus rodeo potato cannon pineapple"
 )
-
-// Get a specified Account's Flow token balance
-func GetFlowTokenBalance(
-	acctAddr cadence.Address,
-	client GlowClient,
-) (cadence.Value, error) {
-	args := []cadence.Value{
-		cadence.Address(acctAddr),
-	}
-
-	result, err := client.ExecScFromFile(scPath("flow_balance"), args)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Deposits Flow tokens into specified account
-func DepositFlowTokens(
-	amount cadence.UFix64,
-	recipientAddr cadence.Address,
-	proposer Account,
-	client GlowClient,
-) (*flow.TransactionResult, error) {
-	args := []cadence.Value{
-		amount, recipientAddr,
-	}
-
-	txRes, err := client.SignAndSendTxFromFile(
-		scPath("flow_transfer"),
-		args,
-		proposer,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return txRes, nil
-}
 
 // Test Deposit Flow Tokens from service account into a newly created account
 func TestDepositFlowTokens(t *testing.T) {
@@ -85,20 +42,27 @@ func TestDepositFlowTokens(t *testing.T) {
 				amount, err := cadence.NewUFix64(s)
 				So(err, ShouldBeNil)
 
-				res, err := DepositFlowTokens(
-					amount,
-					recipient.CadenceAddress(),
+				res, err := client.SignAndSendTxFromFile(
+					scPath("flow_transfer"),
+					[]cadence.Value{
+						amount,
+						recipient.CadenceAddress(),
+					},
 					svcAcct,
-					*client,
 				)
 				So(err, ShouldBeNil)
 				So(res, ShouldNotBeNil)
 				So(res.Error, ShouldBeNil)
 
 				Convey("Get flow token balance of account", func() {
-					balance, err := GetFlowTokenBalance(recipient.CadenceAddress(), *client)
+					result, err := client.ExecScFromFile(
+						scPath("flow_balance"),
+						[]cadence.Value{
+							recipient.CadenceAddress(),
+						},
+					)
 					So(err, ShouldBeNil)
-					So(balance.ToGoValue(), ShouldBeGreaterThan, 1)
+					So(result.ToGoValue(), ShouldBeGreaterThan, 1)
 				})
 			})
 		})
