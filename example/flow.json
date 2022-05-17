@@ -1,0 +1,36 @@
+{
+  "emulators": {
+    "default": {
+      "port": 3569,
+      "serviceAccount": "emulator-svc"
+    }
+  },
+  "contracts": {
+    "FungibleToken": {
+      "source": "./core/contract/FungibleToken.cdc",
+      "aliases": {
+        "emulator": "0xee82856bf20e2aa6",
+        "testnet": "0x9a0766d93b6608b7"
+      }
+    },
+    "FlowToken": {
+      "source": "./core/contract/FlowToken.cdc",
+      "aliases": {
+        "emulator": "0x0ae53cb6e3f42a79",
+        "testnet": "0x7e60df042a9c0868"
+      }
+    }
+  },
+  "networks": {
+    "emulator": "127.0.0.1:3569",
+    "mainnet": "access.mainnet.nodes.onflow.org:9000",
+    "testnet": "access.devnet.nodes.onflow.org:9000"
+  },
+  "accounts": {
+    "emulator-svc": {
+      "address": "f8d6e0586b0a20c7",
+      "key": "3a63ae4f8fffacd89d1b574d87fe448a0f848da7d0a45c04b60744b1c3905a14"
+    }
+  },
+  "deployments": {}
+}
