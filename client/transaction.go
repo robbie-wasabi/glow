@@ -21,7 +21,7 @@ func (c GlowClient) tx(
 	proposer Account,
 	payer Account,
 	authorizers []Account,
-	args []cadence.Value,
+	args ...cadence.Value,
 ) (*Tx, error) {
 	tx, err := c.Services.Transactions.Build(
 		proposer.FlowAddress(),
@@ -60,7 +60,7 @@ func (c GlowClient) NewTx(
 		proposer,
 		payer,
 		authorizers,
-		args,
+		args...,
 	)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (c GlowClient) NewTxFromFile(
 	proposer Account,
 	payer Account,
 	authorizers []Account,
-	args []cadence.Value,
+	args ...cadence.Value,
 ) (*Tx, error) {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
@@ -87,7 +87,7 @@ func (c GlowClient) NewTxFromFile(
 		proposer,
 		payer,
 		authorizers,
-		args,
+		args...,
 	)
 	if err != nil {
 		return nil, err
@@ -106,23 +106,8 @@ func (c GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 	return crypto.NewInMemorySigner(pk, c.HashAlgo), nil
 }
 
-// Sign a transaction with a single signer
-func (tx *Tx) Sign(account Account) error {
-	signer, err := tx.Client.newInMemorySigner(account.PrivKey)
-	if err != nil {
-		return err
-	}
-
-	err = tx.FlowTransaction.SignEnvelope(account.FlowAddress(), 0, signer)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Sign a Transaction with multiple signers
-func (tx *Tx) SignMulti(authorizers []Account) error {
+func (tx *Tx) Sign(authorizers ...Account) error {
 	// map to slice of crypto signers
 	var signers []crypto.Signer
 	for _, a := range authorizers {
@@ -177,8 +162,8 @@ func (signedTx Tx) Send() (*flow.TransactionResult, error) {
 // Sign and send a Transaction from string. Assumes that proposer is also payer
 func (c GlowClient) SignAndSendTx(
 	cdc string,
-	args []cadence.Value,
 	proposer Account,
+	args ...cadence.Value,
 ) (*flow.TransactionResult, error) {
 	tx, err := c.NewTx(
 		cdc,
@@ -206,15 +191,15 @@ func (c GlowClient) SignAndSendTx(
 // Sign and send a Transaction at a specified file path. Assumes that proposer is also payer
 func (c GlowClient) SignAndSendTxFromFile(
 	file string,
-	args []cadence.Value,
 	proposer Account,
+	args ...cadence.Value,
 ) (*flow.TransactionResult, error) {
 	tx, err := c.NewTxFromFile(
 		file,
 		proposer,
 		proposer,
 		[]Account{proposer},
-		args,
+		args...,
 	)
 	if err != nil {
 		return nil, err
@@ -235,10 +220,10 @@ func (c GlowClient) SignAndSendTxFromFile(
 // Sign and send a Transaction at
 func (c GlowClient) SignMultiAndSendTx(
 	cdc string,
-	args []cadence.Value,
 	proposer Account,
 	payer Account,
 	authorizers []Account,
+	args ...cadence.Value,
 ) (*flow.TransactionResult, error) {
 	tx, err := c.NewTx(
 		cdc,
@@ -251,7 +236,7 @@ func (c GlowClient) SignMultiAndSendTx(
 		return nil, err
 	}
 
-	if err = tx.SignMulti(authorizers); err != nil {
+	if err = tx.Sign(authorizers...); err != nil {
 		return nil, err
 	}
 
@@ -266,23 +251,23 @@ func (c GlowClient) SignMultiAndSendTx(
 // Sign and send a Transaction at a specified file path.
 func (c GlowClient) SignMultiAndSendTxFromFile(
 	file string,
-	args []cadence.Value,
 	proposer Account,
 	payer Account,
 	authorizers []Account,
+	args ...cadence.Value,
 ) (*flow.TransactionResult, error) {
 	tx, err := c.NewTxFromFile(
 		file,
 		proposer,
 		payer,
 		authorizers,
-		args,
+		args...,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = tx.SignMulti(authorizers); err != nil {
+	if err = tx.Sign(authorizers...); err != nil {
 		return nil, err
 	}
 

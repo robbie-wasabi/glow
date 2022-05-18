@@ -72,11 +72,9 @@ func (c *GlowClient) DeployContract(
 
 	txRes, err := c.SignAndSendTx(
 		t,
-		[]cadence.Value{
-			contractName,
-			cadence.String(hex.EncodeToString([]byte(*contract))),
-		},
 		proposer,
+		contractName,
+		cadence.String(hex.EncodeToString([]byte(*contract))),
 	)
 	if err != nil {
 		return nil, err

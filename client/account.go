@@ -101,10 +101,8 @@ func (c *GlowClient) CreateAccount(
 
 	txRes, err := c.SignAndSendTx(
 		t,
-		[]cadence.Value{
-			cadence.String(RemoveHexPrefix(privKey.PublicKey().String())),
-		},
 		proposer,
+		cadence.String(RemoveHexPrefix(privKey.PublicKey().String())),
 	)
 	if err != nil {
 		return nil, err

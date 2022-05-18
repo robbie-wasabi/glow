@@ -36,7 +36,7 @@ func (c GlowClient) NewScFromFile(file string) (*Sc, error) {
 // Execute a Script from a string
 func (c GlowClient) ExecSc(
 	cdc string,
-	args []cadence.Value,
+	args ...cadence.Value,
 ) (cadence.Value, error) {
 	result, err := c.Services.Scripts.Execute([]byte(cdc), args, "", c.env)
 	if err != nil {
@@ -49,14 +49,14 @@ func (c GlowClient) ExecSc(
 // Execute a Script at a specified file path
 func (c GlowClient) ExecScFromFile(
 	file string,
-	args []cadence.Value,
+	args ...cadence.Value,
 ) (cadence.Value, error) {
 	sc, err := c.NewScFromFile(file)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := c.ExecSc(sc.Script, args)
+	res, err := c.ExecSc(sc.Script, args...)
 	if err != nil {
 		return nil, err
 	}
