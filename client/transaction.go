@@ -41,6 +41,26 @@ func NewTx(
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
+func NewTxFromString(
+	cdc string,
+	args []cadence.Value,
+	proposer Account,
+	client GlowClient,
+) Tx {
+	return Tx{
+		cdc:      []byte(cdc),
+		args:     args,
+		proposer: proposer,
+		payer:    proposer,
+		authorizers: []Account{
+			proposer,
+		},
+		client: client,
+	}
+}
+
+// Unsigned transaction contructor.
+// Assumes that the proposer is also the gas payer and sole authorizer
 func NewTxFromFile(
 	file string,
 	args []cadence.Value,

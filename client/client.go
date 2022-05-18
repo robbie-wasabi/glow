@@ -122,6 +122,10 @@ type GlowClient struct {
 	gasLimit uint64
 }
 
+func (c GlowClient) GetNetwork() string {
+	return c.network
+}
+
 func NewGlowClient() *GlowClientBuilder {
 	network := os.Getenv("GLOW_NETWORK")
 	root := os.Getenv("GLOW_ROOT")
@@ -246,15 +250,18 @@ func (c GlowClient) deployContracts() {
 	for _, a := range acctNames {
 		d := c.GetAccountDeployment(a)
 		for _, d := range d {
-			// get actor and deploy contract
-			actor := c.GetActor(a)
+			// get acct and deploy contract
+			acct := c.GetAccount(a)
 			contract := c.GetContract(d)
-			txRes, err := actor.
-				NewTxFromString(
-					TX_DEPLOY_CONTRACT,
+			txRes, err := NewTxFromString(
+				TX_DEPLOY_CONTRACT,
+				[]cadence.Value{
 					contract.NameAsCadenceString(),
 					cadence.String(hex.EncodeToString(contract.CdcBytes())),
-				).SignAndSend()
+				},
+				acct,
+				c,
+			).SignAndSend()
 			if err != nil {
 				panic(err)
 			}

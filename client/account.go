@@ -13,6 +13,15 @@ import (
 	"github.com/onflow/flow-go-sdk/crypto"
 )
 
+// Get service account for current network
+func (c GlowClient) GetSvcAcct() Account {
+	account := c.FlowJSON.GetSvcAcct(c.network)
+	if IsEmpty(account) {
+		panic(fmt.Sprintf("account not found in flow.json: %s-svc", c.network))
+	}
+	return account
+}
+
 // Get Account by name and current network
 func (c GlowClient) GetAccount(name string) Account {
 	account := c.FlowJSON.GetAccount(fmt.Sprintf("%s-%s", c.network, name))
@@ -86,14 +95,18 @@ func (c GlowClient) CreateDisposableAccount() (*Account, error) {
 }
 
 // Create a new account on chain
-func (c *GlowClient) CreateAccount(
+func (c GlowClient) CreateAccount(
 	privKey crypto.PrivateKey,
 ) (*Account, error) {
-	txRes, err := c.GetSvcActor().
-		NewTx(
-			[]byte(TX_CREATE_ACCOUNT),
+	svcAcct := c.GetSvcAcct()
+	txRes, err := NewTx(
+		[]byte(TX_CREATE_ACCOUNT),
+		[]cadence.Value{
 			cadence.String(RemoveHexPrefix(privKey.PublicKey().String())),
-		).SignAndSend()
+		},
+		svcAcct,
+		c,
+	).SignAndSend()
 	if err != nil {
 		return nil, err
 	}

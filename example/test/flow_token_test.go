@@ -5,6 +5,7 @@ import (
 
 	"testing"
 
+	. "github.com/rrossilli/glow/actor"
 	. "github.com/rrossilli/glow/client"
 	. "github.com/rrossilli/glow/util"
 
@@ -20,10 +21,10 @@ func TestDepositFlowTokens(t *testing.T) {
 		client := NewGlowClient().Start()
 
 		// get service account
-		svcAcct := client.GetSvcActor()
+		svcAcct := GetSvcActor(*client)
 
 		Convey("Create a new account on the flow blockchain", func() {
-			recipient, err := client.CreateDisposableActor()
+			recipient, err := CreateDisposableActor(*client)
 			So(err, ShouldBeNil)
 			So(recipient, ShouldNotBeNil)
 

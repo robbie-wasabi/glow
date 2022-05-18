@@ -1,4 +1,4 @@
-package client
+package actor
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"github.com/onflow/flow-go-sdk/crypto"
 
 	"github.com/onflow/cadence"
+	. "github.com/rrossilli/glow/client"
 	. "github.com/rrossilli/glow/model"
 	. "github.com/rrossilli/glow/util"
 )
@@ -16,45 +17,47 @@ type Actor struct {
 }
 
 // Actor constructor
-func (c GlowClient) NewActor(
+func NewActor(
 	account Account,
+	client GlowClient,
 ) Actor {
 	return Actor{
 		Account: account,
-		Client:  c,
+		Client:  client,
 	}
 }
 
 // Create a new account on chain with a generic seed phrase and wrap in an Actor
-func (c GlowClient) CreateDisposableActor() (*Actor, error) {
-	privKey, err := c.NewPrivateKey(DEFAULT_KEYS_SEED_PHRASE)
+func CreateDisposableActor(client GlowClient) (*Actor, error) {
+	privKey, err := client.NewPrivateKey(DEFAULT_KEYS_SEED_PHRASE)
 	if err != nil {
 		return nil, err
 	}
 
-	acct, err := c.CreateAccount(privKey)
+	acct, err := client.CreateAccount(privKey)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Actor{
 		Account: *acct,
-		Client:  c,
+		Client:  client,
 	}, nil
 }
 
 // Create a new account on chain and wrap in an Actor
-func (c GlowClient) CreateActor(
+func CreateActor(
 	privKey crypto.PrivateKey,
+	client GlowClient,
 ) (*Actor, error) {
-	acct, err := c.CreateAccount(privKey)
+	acct, err := client.CreateAccount(privKey)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Actor{
 		Account: *acct,
-		Client:  c,
+		Client:  client,
 	}, nil
 }
 
@@ -107,25 +110,25 @@ func (a Actor) NewTxFromFile(
 }
 
 // Get service account actor for current network
-func (c GlowClient) GetSvcActor() Actor {
-	account := c.FlowJSON.GetSvcAcct(c.network)
+func GetSvcActor(client GlowClient) Actor {
+	account := client.FlowJSON.GetSvcAcct(client.GetNetwork())
 	if IsEmpty(account) {
-		panic(fmt.Sprintf("service account not found in flow.json: %s-svc", c.network))
+		panic(fmt.Sprintf("service account not found in flow.json: %s-svc", client.GetNetwork()))
 	}
 	return Actor{
 		Account: account,
-		Client:  c,
+		Client:  client,
 	}
 }
 
 // Get actor by name and current network
-func (c GlowClient) GetActor(name string) Actor {
-	account := c.FlowJSON.GetAccount(fmt.Sprintf("%s-%s", c.network, name))
+func GetActor(name string, client GlowClient) Actor {
+	account := client.FlowJSON.GetAccount(fmt.Sprintf("%s-%s", client.GetNetwork(), name))
 	if IsEmpty(account) {
-		panic(fmt.Sprintf("account not found in flow.json: %s-svc", c.network))
+		panic(fmt.Sprintf("account not found in flow.json: %s-svc", client.GetNetwork()))
 	}
 	return Actor{
 		Account: account,
-		Client:  c,
+		Client:  client,
 	}
 }
