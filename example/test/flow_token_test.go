@@ -18,13 +18,13 @@ func TestDepositFlowTokens(t *testing.T) {
 	Convey("Create a client", t, func() {
 
 		// create and start new glow client
-		client := NewGlowClient().Start()
+		client := NewWrappedGlowClient(NewGlowClient().Start())
 
 		// get service account
-		svcAcct := GetSvcActor(*client)
+		svcAcct := client.GetSvcActor()
 
 		Convey("Create a new account on the flow blockchain", func() {
-			recipient, err := CreateDisposableActor(*client)
+			recipient, err := client.CreateDisposableActor()
 			So(err, ShouldBeNil)
 			So(recipient, ShouldNotBeNil)
 
