@@ -34,7 +34,7 @@ func TestDepositFlowTokens(t *testing.T) {
 
 				txRes, err := svcAcct.
 					NewTxFromFile(TxPath("flow_transfer")).
-					SetArgs(
+					Args(
 						amount,
 						recipient.Account.CadenceAddress(),
 					).

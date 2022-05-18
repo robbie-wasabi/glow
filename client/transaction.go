@@ -11,12 +11,12 @@ import (
 )
 
 type Tx struct {
-	Cdc         []byte
-	Args        []cadence.Value
-	Payer       Account
-	Proposer    Account
-	Authorizers []Account
-	Client      GlowClient
+	cdc         []byte
+	args        []cadence.Value
+	payer       Account
+	proposer    Account
+	authorizers []Account
+	client      GlowClient
 }
 
 // Unsigned transaction contructor.
@@ -28,14 +28,14 @@ func NewTx(
 	client GlowClient,
 ) Tx {
 	return Tx{
-		Cdc:      cdc,
-		Args:     args,
-		Proposer: proposer,
-		Payer:    proposer,
-		Authorizers: []Account{
+		cdc:      cdc,
+		args:     args,
+		proposer: proposer,
+		payer:    proposer,
+		authorizers: []Account{
 			proposer,
 		},
-		Client: client,
+		client: client,
 	}
 }
 
@@ -53,52 +53,52 @@ func NewTxFromFile(
 	}
 
 	return Tx{
-		Cdc:      []byte(cdc),
-		Args:     args,
-		Proposer: proposer,
-		Payer:    proposer,
-		Authorizers: []Account{
+		cdc:      []byte(cdc),
+		args:     args,
+		proposer: proposer,
+		payer:    proposer,
+		authorizers: []Account{
 			proposer,
 		},
-		Client: client,
+		client: client,
 	}
 }
 
 // Specify args
-func (t Tx) SetArgs(args ...cadence.Value) Tx {
-	t.Args = args
+func (t Tx) Args(args ...cadence.Value) Tx {
+	t.args = args
 	return t
 }
 
 // Append arg
 func (t Tx) AddArg(arg cadence.Value) Tx {
-	t.Args = append(t.Args, arg)
+	t.args = append(t.args, arg)
 	return t
 }
 
 // Specify payer
-func (t Tx) SetPayer(p Account) Tx {
-	t.Payer = p
-	t.Authorizers = append(t.Authorizers, p)
+func (t Tx) Payer(p Account) Tx {
+	t.payer = p
+	t.authorizers = append(t.authorizers, p)
 	return t
 }
 
 // Specify proposer
-func (t Tx) SetProposer(p Account) Tx {
-	t.Proposer = p
-	t.Authorizers = append(t.Authorizers, p)
+func (t Tx) Proposer(p Account) Tx {
+	t.proposer = p
+	t.authorizers = append(t.authorizers, p)
 	return t
 }
 
 // Specify tx authorizers (typically unneeded)
-func (t Tx) SetAuthorizers(a ...Account) Tx {
-	t.Authorizers = a
+func (t Tx) Authorizers(a ...Account) Tx {
+	t.authorizers = a
 	return t
 }
 
 // Append tx authorizer
 func (t Tx) AddAuthorizer(a Account) Tx {
-	t.Authorizers = append(t.Authorizers, a)
+	t.authorizers = append(t.authorizers, a)
 	return t
 }
 
@@ -121,8 +121,8 @@ func (c GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 func (t Tx) Sign() (*SignedTx, error) {
 	// map to slice of crypto signers
 	var signers []crypto.Signer
-	for _, a := range t.Authorizers {
-		s, err := t.Client.newInMemorySigner(a.PrivKey)
+	for _, a := range t.authorizers {
+		s, err := t.client.newInMemorySigner(a.PrivKey)
 		if err != nil {
 			return nil, err
 		}
@@ -131,21 +131,21 @@ func (t Tx) Sign() (*SignedTx, error) {
 
 	// map to slice of flow addresses
 	var addresses []flow.Address
-	for _, a := range t.Authorizers {
+	for _, a := range t.authorizers {
 		addresses = append(addresses, a.FlowAddress())
 	}
 
 	// build flow tx
-	flowTx, err := t.Client.Services.Transactions.Build(
-		t.Proposer.FlowAddress(),
-		FlowAddressesFromAccounts(t.Authorizers),
-		t.Proposer.FlowAddress(),
+	flowTx, err := t.client.Services.Transactions.Build(
+		t.proposer.FlowAddress(),
+		FlowAddressesFromAccounts(t.authorizers),
+		t.proposer.FlowAddress(),
 		0, // todo: which key?
-		t.Cdc,
+		t.cdc,
 		"", // is this important?
-		t.Client.gasLimit,
-		t.Args,
-		t.Client.network,
+		t.client.gasLimit,
+		t.args,
+		t.client.network,
 		true,
 	)
 	if err != nil {
@@ -172,7 +172,7 @@ func (t Tx) Sign() (*SignedTx, error) {
 
 	return &SignedTx{
 		FlowTransaction: *flowTx.FlowTransaction(),
-		Client:          t.Client,
+		Client:          t.client,
 	}, err
 }
 

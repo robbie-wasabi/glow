@@ -13,15 +13,6 @@ import (
 	"github.com/onflow/flow-go-sdk/crypto"
 )
 
-// Get service account for current network
-func (c GlowClient) GetSvcAcct() Account {
-	account := c.FlowJSON.GetSvcAcct(c.network)
-	if IsEmpty(account) {
-		panic(fmt.Sprintf("account not found in flow.json: %s-svc", c.network))
-	}
-	return account
-}
-
 // Get Account by name and current network
 func (c GlowClient) GetAccount(name string) Account {
 	account := c.FlowJSON.GetAccount(fmt.Sprintf("%s-%s", c.network, name))
@@ -78,7 +69,8 @@ func (c GlowClient) AccountNamesSorted() []string {
 	return sorted
 }
 
-// Create a new account on chain with a generic/unsafe seed phrase
+// Create a new account on chain with a generic/unsafe seed phrase.
+// These accounts are considered disposable as they have unsafe keys
 func (c GlowClient) CreateDisposableAccount() (*Account, error) {
 	privKey, err := c.NewPrivateKey(DEFAULT_KEYS_SEED_PHRASE)
 	if err != nil {
