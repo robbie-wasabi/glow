@@ -21,11 +21,10 @@ type Tx struct {
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
-func NewTx(
+func (c GlowClient) NewTx(
 	cdc []byte,
 	args []cadence.Value,
 	proposer Account,
-	client GlowClient,
 ) Tx {
 	return Tx{
 		cdc:      cdc,
@@ -35,17 +34,16 @@ func NewTx(
 		authorizers: []Account{
 			proposer,
 		},
-		client: client,
+		client: c,
 	}
 }
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
-func NewTxFromString(
+func (c GlowClient) NewTxFromString(
 	cdc string,
 	args []cadence.Value,
 	proposer Account,
-	client GlowClient,
 ) Tx {
 	return Tx{
 		cdc:      []byte(cdc),
@@ -55,19 +53,18 @@ func NewTxFromString(
 		authorizers: []Account{
 			proposer,
 		},
-		client: client,
+		client: c,
 	}
 }
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
-func NewTxFromFile(
+func (c GlowClient) NewTxFromFile(
 	file string,
 	args []cadence.Value,
 	proposer Account,
-	client GlowClient,
 ) Tx {
-	cdc, err := client.CadenceFromFile(file)
+	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
 		panic(fmt.Sprintf("tx not found at: %s", file))
 	}
@@ -80,7 +77,7 @@ func NewTxFromFile(
 		authorizers: []Account{
 			proposer,
 		},
-		client: client,
+		client: c,
 	}
 }
 
@@ -123,8 +120,8 @@ func (t Tx) AddAuthorizer(a Account) Tx {
 }
 
 type SignedTx struct {
-	FlowTransaction flow.Transaction
-	Client          GlowClient
+	flowTx flow.Transaction
+	client GlowClient
 }
 
 // Create new crypto signer
@@ -191,15 +188,15 @@ func (t Tx) Sign() (*SignedTx, error) {
 	}
 
 	return &SignedTx{
-		FlowTransaction: *flowTx.FlowTransaction(),
-		Client:          t.client,
+		flowTx: *flowTx.FlowTransaction(),
+		client: t.client,
 	}, err
 }
 
 // Send a signed Transaction
 func (signedTx SignedTx) Send() (*flow.TransactionResult, error) {
-	txBytes := []byte(fmt.Sprintf("%x", signedTx.FlowTransaction.Encode()))
-	_, res, err := signedTx.Client.Services.Transactions.SendSigned(txBytes, true)
+	txBytes := []byte(fmt.Sprintf("%x", signedTx.flowTx.Encode()))
+	_, res, err := signedTx.client.Services.Transactions.SendSigned(txBytes, true)
 	if err != nil {
 		return nil, err
 	}

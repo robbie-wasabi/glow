@@ -253,14 +253,13 @@ func (c GlowClient) deployContracts() {
 			// get acct and deploy contract
 			acct := c.GetAccount(a)
 			contract := c.GetContract(d)
-			txRes, err := NewTxFromString(
+			txRes, err := c.NewTxFromString(
 				TX_DEPLOY_CONTRACT,
 				[]cadence.Value{
 					contract.NameAsCadenceString(),
 					cadence.String(hex.EncodeToString(contract.CdcBytes())),
 				},
 				acct,
-				c,
 			).SignAndSend()
 			if err != nil {
 				panic(err)

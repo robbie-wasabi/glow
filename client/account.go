@@ -99,13 +99,12 @@ func (c GlowClient) CreateAccount(
 	privKey crypto.PrivateKey,
 ) (*Account, error) {
 	svcAcct := c.GetSvcAcct()
-	txRes, err := NewTx(
+	txRes, err := c.NewTx(
 		[]byte(TX_CREATE_ACCOUNT),
 		[]cadence.Value{
 			cadence.String(RemoveHexPrefix(privKey.PublicKey().String())),
 		},
 		svcAcct,
-		c,
 	).SignAndSend()
 	if err != nil {
 		return nil, err

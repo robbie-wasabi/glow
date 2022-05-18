@@ -67,11 +67,10 @@ func (a Actor) NewTx(
 	cdc []byte,
 	args ...cadence.Value,
 ) Tx {
-	tx := NewTx(
+	tx := a.Client.NewTx(
 		cdc,
 		args,
 		a.Account,
-		a.Client,
 	)
 
 	return tx
@@ -83,11 +82,10 @@ func (a Actor) NewTxFromString(
 	cdc string,
 	args ...cadence.Value,
 ) Tx {
-	tx := NewTx(
+	tx := a.Client.NewTx(
 		[]byte(cdc),
 		args,
 		a.Account,
-		a.Client,
 	)
 
 	return tx
@@ -99,11 +97,10 @@ func (a Actor) NewTxFromFile(
 	file string,
 	args ...cadence.Value,
 ) Tx {
-	tx := NewTxFromFile(
+	tx := a.Client.NewTxFromFile(
 		file,
 		args,
 		a.Account,
-		a.Client,
 	)
 
 	return tx
