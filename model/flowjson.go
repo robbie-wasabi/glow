@@ -5,6 +5,7 @@ import (
 	"sort"
 )
 
+// Maps to a standard flow.json
 type FlowJSON struct {
 	Emulator    interface{}                    `json:"emulators"` // todo
 	Contracts   map[string]Contract            `json:"contracts"`

@@ -1,13 +1,9 @@
 package client
 
 import (
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"strings"
-
-	"github.com/onflow/cadence"
-	"github.com/onflow/flow-go-sdk"
 
 	. "github.com/rrossilli/glow/util"
 
@@ -15,16 +11,29 @@ import (
 )
 
 // Get Contract by name
-func (c GlowClient) GetContract(name string) Contract {
+func (c GlowClient) GetContract(name string) ContractCdc {
 	contract := c.FlowJSON.GetContract(name)
 	if IsEmpty(contract) {
 		panic(fmt.Sprintf("contract not found in flow.json: %s", name))
 	}
-	return contract
+
+	// todo:
+	source := RemoveFirstChar(contract.Source)
+
+	cdc, err := c.GetContractCdc(source)
+	if err != nil {
+		panic(err)
+	}
+
+	return ContractCdc{
+		Contract: contract,
+		Name:     name,
+		Cdc:      *cdc,
+	}
 }
 
 // Retrieve cadence from file and replace imports with addresses from config
-func (c GlowClient) Contract(file string) (*string, error) {
+func (c GlowClient) GetContractCdc(file string) (*string, error) {
 	p := c.root + file
 	contractFile, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -49,36 +58,4 @@ func (c GlowClient) replaceContractFilePaths(cdc string) string {
 		}
 	}
 	return strings.Join(lines, "\n")
-}
-
-// Deploy contract to account
-func (c *GlowClient) DeployContract(
-	contractName cadence.String,
-	contractFilePath string,
-	proposer Account,
-) (*flow.TransactionResult, error) {
-	contract, err := c.Contract(contractFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	t := `
-		transaction(name: String, code: String) {
-			prepare(signer: AuthAccount) {
-				signer.contracts.add(name: name, code: code.decodeHex())
-			}
-		}
-	`
-
-	txRes, err := c.SignAndSendTx(
-		t,
-		proposer,
-		contractName,
-		cadence.String(hex.EncodeToString([]byte(*contract))),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return txRes, nil
 }

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,9 +16,10 @@ import (
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/spf13/afero"
 
-	. "github.com/rrossilli/glow/util"
+	// . "github.com/rrossilli/glow/util"
 
 	. "github.com/rrossilli/glow/model"
+	. "github.com/rrossilli/glow/tmp"
 )
 
 const (
@@ -220,7 +222,6 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 
 // Submit transactions to initialize accounts sourced from flow.json
 func (c GlowClient) initAccounts() {
-	svcAcct := c.GetSvcAcct()
 	accounts := c.AccountsSorted()
 	for i, a := range accounts {
 		// skip svc account
@@ -230,7 +231,6 @@ func (c GlowClient) initAccounts() {
 
 		acct, err := c.CreateAccount(
 			a.CryptoPrivateKey(),
-			svcAcct,
 		)
 		if err != nil {
 			panic(err)
@@ -246,13 +246,15 @@ func (c GlowClient) deployContracts() {
 	for _, a := range acctNames {
 		d := c.GetAccountDeployment(a)
 		for _, d := range d {
-			acct := c.GetAccount(a)
-			contract := c.FlowJSON.GetContract(d)
-			txRes, err := c.DeployContract(
-				cadence.String(d),
-				RemoveFirstChar(contract.Source), // must remove leading "." due to project structure
-				acct,
-			)
+			// get actor and deploy contract
+			actor := c.GetActor(a)
+			contract := c.GetContract(d)
+			txRes, err := actor.
+				NewTxFromString(
+					TX_DEPLOY_CONTRACT,
+					contract.NameAsCadenceString(),
+					cadence.String(hex.EncodeToString(contract.CdcBytes())),
+				).SignAndSend()
 			if err != nil {
 				panic(err)
 			}
