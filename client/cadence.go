@@ -9,8 +9,9 @@ import (
 
 // Retrieve cadence from file and replace imports with addresses from config
 func (c GlowClient) CadenceFromFile(file string) (string, error) {
-	absFilePath := ROOT + file
-	txFile, err := ioutil.ReadFile(absFilePath)
+
+	p := c.root + file
+	txFile, err := ioutil.ReadFile(p)
 	if err != nil {
 		return "", err
 	}
@@ -28,7 +29,7 @@ func (c GlowClient) replaceImportAddresses(cdc string) string {
 		cdc = strings.Replace(
 			cdc,
 			PrependHexPrefix(key),
-			co.Address(c.env),
+			co.Address(c.network),
 			-1,
 		)
 	}

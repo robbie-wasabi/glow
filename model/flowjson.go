@@ -45,8 +45,8 @@ func (f FlowJSON) ContractNamesSortedByLength(asc bool) []string {
 }
 
 // Get account with "svc" suffix
-func (f FlowJSON) GetSvcAcct(env string) Account {
-	return f.GetAccount(fmt.Sprintf("%s-svc", env))
+func (f FlowJSON) GetSvcAcct(network string) Account {
+	return f.GetAccount(fmt.Sprintf("%s-svc", network))
 }
 
 // Get account by name
@@ -65,13 +65,13 @@ func (f FlowJSON) AccountNames() []string {
 }
 
 // Get deployment by name
-func (f FlowJSON) GetDeployment(env string) map[string][]string {
-	deployment := f.Deployments[env]
+func (f FlowJSON) GetDeployment(network string) map[string][]string {
+	deployment := f.Deployments[network]
 	return deployment
 }
 
 // Get deployment contracts by account name
-func (f FlowJSON) GetAccountDeployment(env, name string) []string {
-	deployment := f.Deployments[env]
-	return deployment[fmt.Sprintf("%s-%s", env, name)]
+func (f FlowJSON) GetAccountDeployment(network, name string) []string {
+	deployment := f.Deployments[network]
+	return deployment[fmt.Sprintf("%s-%s", network, name)]
 }

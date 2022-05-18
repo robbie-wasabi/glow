@@ -24,10 +24,10 @@ const (
 	ECDSA_P256 = "ECDSA_P256"
 	SHA3_256   = "SHA3_256"
 
-	ENV_EMBEDDED = "embedded"
-	ENV_EMULATOR = "emulator"
-	ENV_TESTNET  = "testnet"
-	ENV_MAINNET  = "mainnet"
+	NETWORK_EMBEDDED = "embedded"
+	NETWORK_EMULATOR = "emulator"
+	NETWORK_TESTNET  = "testnet"
+	NETWORK_MAINNET  = "mainnet"
 
 	DEFAULT_LOG_LEVEL            = 3
 	DEFAULT_EMULATOR_SVC_ACCOUNT = "emulator-svc"
@@ -41,10 +41,10 @@ type GlowClientBuilder struct {
 	HashAlgo     crypto.HashAlgorithm
 	SigAlgo      crypto.SignatureAlgorithm
 
-	// env vars
-	LogLvl       int
-	FlowJSONPath string
-	Env          string
+	// network vars
+	LogLvl  int
+	Root    string
+	Network string
 }
 
 func (b *GlowClientBuilder) InitAccounts(l bool) *GlowClientBuilder {
@@ -77,9 +77,9 @@ func (b *GlowClientBuilder) GasLimit(limit uint64) *GlowClientBuilder {
 	return b
 }
 
-func NewGlowClientBuilder(env, flowJSONPath string, logLvl int) *GlowClientBuilder {
-	if env == "" {
-		env = ENV_EMBEDDED
+func NewGlowClientBuilder(network, root string, logLvl int) *GlowClientBuilder {
+	if network == "" {
+		network = NETWORK_EMBEDDED
 	}
 
 	inMemory := false
@@ -88,28 +88,29 @@ func NewGlowClientBuilder(env, flowJSONPath string, logLvl int) *GlowClientBuild
 	hashAlgo := crypto.StringToHashAlgorithm(SHA3_256)
 	sigAlgo := crypto.StringToSignatureAlgorithm(ECDSA_P256)
 
-	if env == ENV_EMBEDDED {
-		env = ENV_EMULATOR
+	if network == NETWORK_EMBEDDED {
+		network = NETWORK_EMULATOR
 		inMemory = true
 		depContracts = true
 		initAccounts = true
 	}
 
 	return &GlowClientBuilder{
-		Env:          env,
+		Network:      network,
 		InMemory:     inMemory,
 		InitAccts:    initAccounts,
 		DepContracts: depContracts,
 		LogLvl:       logLvl,
 		GasLim:       9999,
-		FlowJSONPath: flowJSONPath,
+		Root:         root,
 		HashAlgo:     hashAlgo,
 		SigAlgo:      sigAlgo,
 	}
 }
 
 type GlowClient struct {
-	env      string
+	network  string
+	root     string
 	FlowJSON FlowJSON
 	Logger   output.Logger
 	Services *services.Services
@@ -120,12 +121,10 @@ type GlowClient struct {
 }
 
 func NewGlowClient() *GlowClientBuilder {
-	env := os.Getenv("ENV")
+	network := os.Getenv("GLOW_NETWORK")
+	root := os.Getenv("GLOW_ROOT")
+	log := os.Getenv("GLOW_LOG")
 
-	flowJSONPath := os.Getenv("FJSON")
-	absPath := ROOT + flowJSONPath
-
-	log := os.Getenv("LOG")
 	var logLvl int
 	if log != "" {
 		lvl, err := strconv.Atoi(log)
@@ -137,7 +136,7 @@ func NewGlowClient() *GlowClientBuilder {
 		logLvl = DEFAULT_LOG_LEVEL
 	}
 
-	c := NewGlowClientBuilder(env, absPath, logLvl)
+	c := NewGlowClientBuilder(network, root, logLvl)
 
 	return c
 }
@@ -162,19 +161,20 @@ func parseFlowJSON(file string) (flowJSON FlowJSON) {
 func (b *GlowClientBuilder) Start() *GlowClient {
 	logger := output.NewStdoutLogger(b.LogLvl)
 	loader := &afero.Afero{Fs: afero.NewOsFs()}
-	fmt.Printf("b.FlowJSONPath: %v\n", b.FlowJSONPath)
-	state, err := flowkit.Load([]string{b.FlowJSONPath}, loader)
+	fJSONPath := fmt.Sprintf("%s/flow.json", b.Root) // assumes that flow.json is at root
+	// fmt.Printf("fJSONPath: %v\n", fJSONPath)
+	state, err := flowkit.Load([]string{fJSONPath}, loader)
 	if err != nil {
-		logger.Error("\nFlowkit was unable to load project configuration: make sure to 'export FJSON=<flow_json_path>'")
+		logger.Error(fmt.Sprintf("\nFlowkit was unable to load project configuration at path: %s", b.Root))
 		panic(err)
 	}
-	flowJSON := parseFlowJSON(b.FlowJSONPath)
+	flowJSON := parseFlowJSON(fJSONPath)
 
 	logger.Info("\n==================================")
 	logger.Info("STARTING CLIENT")
-	logger.Info(fmt.Sprintf("env: %v", b.Env))
+	logger.Info(fmt.Sprintf("network: %v", b.Network))
 	logger.Info(fmt.Sprintf("in memory: %v", b.InMemory))
-	logger.Info(fmt.Sprintf("flow.json: %v", b.FlowJSONPath))
+	logger.Info(fmt.Sprintf("flow.json: %v", b.Root))
 	logger.Info("==================================\n")
 
 	var service *services.Services
@@ -183,7 +183,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		gw := gateway.NewEmulatorGateway(svcAcct)
 		service = services.NewServices(gw, state, logger)
 	} else {
-		network, err := state.Networks().ByName(b.Env)
+		network, err := state.Networks().ByName(b.Network)
 		if err != nil {
 			panic(err)
 		}
@@ -196,7 +196,8 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 	}
 
 	wrappedClient := GlowClient{
-		env:      b.Env,
+		network:  b.Network,
+		root:     b.Root,
 		FlowJSON: flowJSON,
 		Logger:   logger,
 		Services: service,

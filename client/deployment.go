@@ -6,17 +6,17 @@ import (
 	. "github.com/rrossilli/glow/util"
 )
 
-// Deployment for current env
+// Deployment for current network
 func (c GlowClient) Deployment() map[string][]string {
-	deployment := c.FlowJSON.GetDeployment(c.env)
+	deployment := c.FlowJSON.GetDeployment(c.network)
 	if IsEmpty(deployment) {
-		panic(fmt.Sprintf("deployment not found in flow.json: %s", c.env))
+		panic(fmt.Sprintf("deployment not found in flow.json: %s", c.network))
 	}
 	return deployment
 }
 
-// Get deployment for current env and account
+// Get deployment for current network and account
 func (c GlowClient) GetAccountDeployment(name string) []string {
-	contractNames := c.FlowJSON.GetAccountDeployment(c.env, name)
+	contractNames := c.FlowJSON.GetAccountDeployment(c.network, name)
 	return contractNames
 }

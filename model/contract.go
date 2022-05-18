@@ -5,6 +5,6 @@ type Contract struct {
 	Aliases map[string]string `json:"aliases"`
 }
 
-func (c Contract) Address(env string) string {
-	return c.Aliases[env]
+func (c Contract) Address(network string) string {
+	return c.Aliases[network]
 }

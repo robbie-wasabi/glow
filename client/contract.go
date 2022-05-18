@@ -24,9 +24,9 @@ func (c GlowClient) GetContract(name string) Contract {
 }
 
 // Retrieve cadence from file and replace imports with addresses from config
-func (c GlowClient) Contract(filePath string) (*string, error) {
-	path := ROOT + filePath // we use absolute paths
-	contractFile, err := ioutil.ReadFile(path)
+func (c GlowClient) Contract(file string) (*string, error) {
+	p := c.root + file
+	contractFile, err := ioutil.ReadFile(p)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (c GlowClient) replaceContractFilePaths(cdc string) string {
 		for _, key := range keys {
 			co := c.FlowJSON.Contracts[key]
 			if strings.Contains(line, fmt.Sprintf("import %v from", key)) {
-				lines[i] = fmt.Sprintf("import %v from %v", key, co.Address(c.env))
+				lines[i] = fmt.Sprintf("import %v from %v", key, co.Address(c.network))
 			}
 		}
 	}

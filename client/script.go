@@ -38,7 +38,7 @@ func (c GlowClient) ExecSc(
 	cdc string,
 	args ...cadence.Value,
 ) (cadence.Value, error) {
-	result, err := c.Services.Scripts.Execute([]byte(cdc), args, "", c.env)
+	result, err := c.Services.Scripts.Execute([]byte(cdc), args, "", c.network)
 	if err != nil {
 		return nil, err
 	}

@@ -12,36 +12,36 @@ import (
 	"github.com/onflow/flow-go-sdk/crypto"
 )
 
-// Get service account for current env
+// Get service account for current network
 func (c GlowClient) GetSvcAcct() Account {
-	account := c.FlowJSON.GetSvcAcct(c.env)
+	account := c.FlowJSON.GetSvcAcct(c.network)
 	if IsEmpty(account) {
-		panic(fmt.Sprintf("account not found in flow.json: %s-svc", c.env))
+		panic(fmt.Sprintf("account not found in flow.json: %s-svc", c.network))
 	}
 	return account
 }
 
-// Get Account by name and current env
+// Get Account by name and current network
 func (c GlowClient) GetAccount(name string) Account {
-	account := c.FlowJSON.GetAccount(fmt.Sprintf("%s-%s", c.env, name))
+	account := c.FlowJSON.GetAccount(fmt.Sprintf("%s-%s", c.network, name))
 	if IsEmpty(account) {
 		panic(fmt.Sprintf("account not found in flow.json: %s", name))
 	}
 	return account
 }
 
-// Get Accounts for current env
+// Get Accounts for current network
 func (c GlowClient) Accounts() map[string]Account {
 	accounts := map[string]Account{}
 	for n, a := range c.FlowJSON.Accounts {
-		if strings.Contains(n, c.env) {
+		if strings.Contains(n, c.network) {
 			accounts[n] = a
 		}
 	}
 	return accounts
 }
 
-// Get Account names for current env
+// Get Account names for current network
 func (c GlowClient) AccountNames() []string {
 	keys := make([]string, 0, len(c.Accounts()))
 	for k := range c.Accounts() {
@@ -69,7 +69,7 @@ func (c GlowClient) AccountNamesSorted() []string {
 	for _, o := range EMULATOR_ADDRESS_ORDER {
 		for n, a := range c.Accounts() {
 			if a.Address == o {
-				name := strings.ReplaceAll(n, fmt.Sprintf("%s-", c.env), "")
+				name := strings.ReplaceAll(n, fmt.Sprintf("%s-", c.network), "")
 				sorted = append(sorted, name)
 			}
 		}

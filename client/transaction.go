@@ -32,7 +32,7 @@ func (c GlowClient) tx(
 		"", // is this important?
 		c.gasLimit,
 		args,
-		c.env,
+		c.network,
 		true,
 	)
 	if err != nil {

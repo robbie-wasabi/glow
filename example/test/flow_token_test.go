@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	. "github.com/rrossilli/glow/client"
+	. "github.com/rrossilli/glow/util"
 
 	"github.com/onflow/cadence"
 	. "github.com/smartystreets/goconvey/convey"
@@ -43,7 +44,7 @@ func TestDepositFlowTokens(t *testing.T) {
 				So(err, ShouldBeNil)
 
 				res, err := client.SignAndSendTxFromFile(
-					scPath("flow_transfer"),
+					TxPath("flow_transfer"),
 					svcAcct,
 					amount,
 					recipient.CadenceAddress(),
@@ -54,7 +55,7 @@ func TestDepositFlowTokens(t *testing.T) {
 
 				Convey("Get flow token balance of account", func() {
 					result, err := client.ExecScFromFile(
-						scPath("flow_balance"),
+						ScPath("flow_balance"),
 						recipient.CadenceAddress(),
 					)
 					So(err, ShouldBeNil)

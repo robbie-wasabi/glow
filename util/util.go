@@ -54,3 +54,16 @@ func Mapkey(m map[string]interface{}, value interface{}) (key string, ok bool) {
 	}
 	return
 }
+
+const (
+	path_transaction = "/transaction"
+	path_script      = "/script"
+)
+
+func TxPath(filename string) string {
+	return fmt.Sprintf("%s/%s.cdc", path_transaction, filename)
+}
+
+func ScPath(filename string) string {
+	return fmt.Sprintf("%s/%s.cdc", path_script, filename)
+}
