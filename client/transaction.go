@@ -23,8 +23,8 @@ type Tx struct {
 // Assumes that the proposer is also the gas payer and sole authorizer
 func (c *GlowClient) NewTx(
 	cdc []byte,
-	args []cadence.Value,
 	proposer Account,
+	args ...cadence.Value,
 ) Tx {
 	return Tx{
 		cdc:      cdc,
@@ -42,8 +42,8 @@ func (c *GlowClient) NewTx(
 // Assumes that the proposer is also the gas payer and sole authorizer
 func (c *GlowClient) NewTxFromString(
 	cdc string,
-	args []cadence.Value,
 	proposer Account,
+	args ...cadence.Value,
 ) Tx {
 	return Tx{
 		cdc:      []byte(cdc),
@@ -59,10 +59,10 @@ func (c *GlowClient) NewTxFromString(
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
-func (c GlowClient) NewTxFromFile(
+func (c *GlowClient) NewTxFromFile(
 	file string,
-	args []cadence.Value,
 	proposer Account,
+	args ...cadence.Value,
 ) Tx {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
@@ -77,7 +77,7 @@ func (c GlowClient) NewTxFromFile(
 		authorizers: []Account{
 			proposer,
 		},
-		client: &c,
+		client: c,
 	}
 }
 
@@ -121,11 +121,11 @@ func (t Tx) AddAuthorizer(a Account) Tx {
 
 type SignedTx struct {
 	flowTx flow.Transaction
-	client GlowClient
+	client *GlowClient
 }
 
 // Create new crypto signer
-func (c GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
+func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 	pk, err := c.NewPrivateKeyFromHex(privKey)
 	if err != nil {
 		return nil, err

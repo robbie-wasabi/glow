@@ -5,7 +5,6 @@ import (
 
 	"testing"
 
-	. "github.com/rrossilli/glow/actor"
 	. "github.com/rrossilli/glow/client"
 	. "github.com/rrossilli/glow/util"
 
@@ -13,19 +12,28 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+const (
+	GENERATE_KEYS_SEED_PHRASE = "elephant ears space cowboy octopus rodeo potato cannon pineapple"
+)
+
 // Test Deposit Flow Tokens from service account into a newly created account
 func TestDepositFlowTokens(t *testing.T) {
 	Convey("Create a client", t, func() {
 
 		// create and start new glow client
-		client := NewWrappedGlowClient(NewGlowClient().Start())
-		client2 := NewGlowClient().Start()
+		client := NewGlowClient().Start()
 
 		// get service account
-		svcAcct := client.GetSvcActor()
+		svcAcct := client.GetSvcAcct()
 
 		Convey("Create a new account on the flow blockchain", func() {
-			recipient, err := client.CreateDisposableActor()
+			privKey, err := client.NewPrivateKey(GENERATE_KEYS_SEED_PHRASE)
+			So(err, ShouldBeNil)
+			So(privKey, ShouldNotBeNil)
+
+			recipient, err := client.CreateAccount(
+				privKey,
+			)
 			So(err, ShouldBeNil)
 			So(recipient, ShouldNotBeNil)
 
@@ -34,31 +42,21 @@ func TestDepositFlowTokens(t *testing.T) {
 				amount, err := cadence.NewUFix64(s)
 				So(err, ShouldBeNil)
 
-				txRes, err := svcAcct.
-					NewTxFromFile(TxPath("flow_transfer")).
-					Args(
-						amount,
-						recipient.Account.CadenceAddress(),
-					).
-					SignAndSend()
-
-                txRes, err = client2.NewTxFromFile(
-                    TxPath("flow_transfer"), 
-                    []cadence.Value{
-						amount,
-						recipient.Account.CadenceAddress(),
-                    },
-                    svcAcct.Account,
-                ).SignAndSend()
-
+				res, err := client.NewTxFromFile(
+					TxPath("flow_transfer"),
+					svcAcct,
+				).Args(
+					amount,
+					recipient.CadenceAddress(),
+				).SignAndSend()
 				So(err, ShouldBeNil)
-				So(txRes, ShouldNotBeNil)
-				So(txRes.Error, ShouldBeNil)
+				So(res, ShouldNotBeNil)
+				So(res.Error, ShouldBeNil)
 
 				Convey("Get flow token balance of account", func() {
 					result, err := client.ExecScFromFile(
 						ScPath("flow_balance"),
-						recipient.Account.CadenceAddress(),
+						recipient.CadenceAddress(),
 					)
 					So(err, ShouldBeNil)
 					So(result.ToGoValue(), ShouldBeGreaterThan, 1)
