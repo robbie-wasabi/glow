@@ -16,12 +16,12 @@ type Tx struct {
 	payer       Account
 	proposer    Account
 	authorizers []Account
-	client      GlowClient
+	client      *GlowClient // todo:
 }
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
-func (c GlowClient) NewTx(
+func (c *GlowClient) NewTx(
 	cdc []byte,
 	args []cadence.Value,
 	proposer Account,
@@ -40,7 +40,7 @@ func (c GlowClient) NewTx(
 
 // Unsigned transaction contructor.
 // Assumes that the proposer is also the gas payer and sole authorizer
-func (c GlowClient) NewTxFromString(
+func (c *GlowClient) NewTxFromString(
 	cdc string,
 	args []cadence.Value,
 	proposer Account,
@@ -77,7 +77,7 @@ func (c GlowClient) NewTxFromFile(
 		authorizers: []Account{
 			proposer,
 		},
-		client: c,
+		client: &c,
 	}
 }
 

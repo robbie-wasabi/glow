@@ -19,6 +19,7 @@ func TestDepositFlowTokens(t *testing.T) {
 
 		// create and start new glow client
 		client := NewWrappedGlowClient(NewGlowClient().Start())
+		client2 := NewGlowClient().Start()
 
 		// get service account
 		svcAcct := client.GetSvcActor()
@@ -40,6 +41,16 @@ func TestDepositFlowTokens(t *testing.T) {
 						recipient.Account.CadenceAddress(),
 					).
 					SignAndSend()
+
+                txRes, err = client2.NewTxFromFile(
+                    TxPath("flow_transfer"), 
+                    []cadence.Value{
+						amount,
+						recipient.Account.CadenceAddress(),
+                    },
+                    svcAcct.Account,
+                ).SignAndSend()
+
 				So(err, ShouldBeNil)
 				So(txRes, ShouldNotBeNil)
 				So(txRes.Error, ShouldBeNil)

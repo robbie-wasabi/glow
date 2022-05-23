@@ -6,8 +6,9 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # PARTICULAR PURPOSE.
 
 # This program built for i386-apple-darwin11.3.0
+ 
 
-# Make data base, printed on Tue May 17 15:26:07 2022
+# Make data base, printed on Mon May 23 14:34:33 2022
 
 # Variables
 
@@ -44,13 +45,13 @@ __CFBundleIdentifier = com.microsoft.VSCode
 # environment
 P9K_SSH = 0
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /var/folders/9v/7vzw8dnn1n16lhphyyxw4sfc0000gn/T/vscode-ipc-a7d8fc59-76c4-48fe-bd9b-eee333a147a5.sock
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/9v/7vzw8dnn1n16lhphyyxw4sfc0000gn/T/vscode-ipc-b7764bfe-d956-4bbb-bbd9-9761f095f04b.sock
 # environment
 VSCODE_CWD = /Users/robertrossilli/Documents/teams/rrossilli/glow
 # environment
 GOPROXY = https://proxy.golang.org,direct
 # environment
-PATH = /usr/local/opt/openssl@3/bin:/usr/local/opt/node@14/bin:/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/usr/local/Cellar/openvpn/2.5.0/sbin:/Users/robertrossilli/go/bin:/Users/robertrossilli/flutter/bin:/Users/robertrossilli/.pub-cache/bin
+PATH = /usr/local/opt/openssl@3/bin:/usr/local/opt/node@14/bin:/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/usr/local/Cellar/openvpn/2.5.0/sbin:/Users/robertrossilli/go/bin:/Users/robertrossilli/Documents/teams/rrossilli/secure-cadence-analyzer/flutter/bin:/Users/robertrossilli/.pub-cache/bin
 # environment
 LSCOLORS = Gxfxcxdxbxegedabagacad
 # environment
@@ -80,11 +81,11 @@ MAKEFILEPATH = $(shell /usr/bin/xcode-select -print-path 2>/dev/null || echo /De
 # environment
 VSCODE_CLI = 1
 # environment
-VSCODE_CODE_CACHE_PATH = /Users/robertrossilli/Library/Application Support/Code/CachedData/da15b6fd3ef856477bf6f4fb29ba1b7af717770d
+VSCODE_CODE_CACHE_PATH = /Users/robertrossilli/Library/Application Support/Code/CachedData/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5
 # environment
 LOGNAME = robertrossilli
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
 # environment
 ZSH = /Users/robertrossilli/.oh-my-zsh
 # environment
@@ -110,7 +111,7 @@ USER = robertrossilli
 # default
 MAKECMDGOALS := all
 # environment
-TERM_SESSION_ID = w0t0p0:FD258C40-B8A5-44EC-AC16-672B2715FDF4
+TERM_SESSION_ID = w0t1p0:DA2B74F1-DEE5-45A7-81E3-380356DBCE3B
 # environment
 LESS = -R
 # automatic
@@ -126,7 +127,7 @@ TMPDIR = /var/folders/9v/7vzw8dnn1n16lhphyyxw4sfc0000gn/T/
 # automatic
 *F = $(notdir $*)
 # environment
-VSCODE_IPC_HOOK = /Users/robertrossilli/Library/Application Support/Code/1.67.1-main.sock
+VSCODE_IPC_HOOK = /Users/robertrossilli/Library/Application Support/Code/1.67.2-main.sock
 # makefile
 MAKEFLAGS = Rrqp
 # environment
@@ -136,7 +137,7 @@ MFLAGS = -Rrqp
 # environment
 TERM_PROGRAM_VERSION = 3.4.15
 # environment
-XPC_SERVICE_NAME = application.com.microsoft.VSCode.53153024.53153030.42B59E8B-3BB6-4B1F-AB5F-454D9B1AD3C3
+XPC_SERVICE_NAME = application.com.microsoft.VSCode.53153024.53153030.468A8748-6313-456F-9524-D0D33BCE4AFE
 # environment
 LC_TERMINAL_VERSION = 3.4.15
 # automatic
@@ -144,7 +145,7 @@ LC_TERMINAL_VERSION = 3.4.15
 # automatic
 +F = $(notdir $+)
 # environment
-ITERM_SESSION_ID = w0t0p0:FD258C40-B8A5-44EC-AC16-672B2715FDF4
+ITERM_SESSION_ID = w0t1p0:DA2B74F1-DEE5-45A7-81E3-380356DBCE3B
 # environment
 COLORFGBG = 15;0
 # environment
@@ -176,9 +177,9 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-_P9K_TTY = /dev/ttys000
+_P9K_TTY = /dev/ttys004
 # environment
-VSCODE_PID = 1650
+VSCODE_PID = 53388
 # variable set hash-table stats:
 # Load=84/1024=8%, Rehash=0, Collisions=5/108=5%
 
@@ -188,9 +189,9 @@ VSCODE_PID = 1650
 
 # Directories
 
-# . (device 16777223, inode 53443921): 14 files, no impossibilities.
+# . (device 16777223, inode 53443921): 16 files, no impossibilities.
 
-# 14 files, no impossibilities in 1 directories.
+# 16 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -274,7 +275,7 @@ flow-token-test:
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Tue May 17 15:26:07 2022
+# Finished Make data base on Mon May 23 14:34:33 2022
 
  
 make: *** No rule to make target `all'.  Stop.
