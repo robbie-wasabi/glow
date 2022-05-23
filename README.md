@@ -14,6 +14,8 @@ $ export GLOW_ROOT=`pwd`/example
 $ export GLOW_NETWORK=embedded
 ```
 
+---
+
 ## Caveats
 
 rather than throwing an error, the client will always panic when it discovers
