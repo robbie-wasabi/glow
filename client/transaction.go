@@ -12,11 +12,11 @@ import (
 
 type Tx struct {
 	FlowTransaction flow.Transaction
-	Client          GlowClient
+	Client          *GlowClient
 }
 
 // Create new Transaction
-func (c GlowClient) tx(
+func (c *GlowClient) tx(
 	cdc []byte,
 	proposer Account,
 	payer Account,
@@ -48,7 +48,7 @@ func (c GlowClient) tx(
 }
 
 // Create new Transaction from cadence string
-func (c GlowClient) NewTx(
+func (c *GlowClient) NewTx(
 	cdc string,
 	proposer Account,
 	payer Account,
@@ -70,7 +70,7 @@ func (c GlowClient) NewTx(
 }
 
 // Create new Transaction from file path
-func (c GlowClient) NewTxFromFile(
+func (c *GlowClient) NewTxFromFile(
 	file string,
 	proposer Account,
 	payer Account,
@@ -97,7 +97,7 @@ func (c GlowClient) NewTxFromFile(
 }
 
 // Create new crypto signer
-func (c GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
+func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 	pk, err := c.NewPrivateKeyFromHex(privKey)
 	if err != nil {
 		return nil, err
@@ -160,7 +160,7 @@ func (signedTx Tx) Send() (*flow.TransactionResult, error) {
 }
 
 // Sign and send a Transaction from string. Assumes that proposer is also payer
-func (c GlowClient) SignAndSendTx(
+func (c *GlowClient) SignAndSendTx(
 	cdc string,
 	proposer Account,
 	args ...cadence.Value,
@@ -189,7 +189,7 @@ func (c GlowClient) SignAndSendTx(
 }
 
 // Sign and send a Transaction at a specified file path. Assumes that proposer is also payer
-func (c GlowClient) SignAndSendTxFromFile(
+func (c *GlowClient) SignAndSendTxFromFile(
 	file string,
 	proposer Account,
 	args ...cadence.Value,
@@ -218,7 +218,7 @@ func (c GlowClient) SignAndSendTxFromFile(
 }
 
 // Sign and send a Transaction at
-func (c GlowClient) SignMultiAndSendTx(
+func (c *GlowClient) SignMultiAndSendTx(
 	cdc string,
 	proposer Account,
 	payer Account,
@@ -249,7 +249,7 @@ func (c GlowClient) SignMultiAndSendTx(
 }
 
 // Sign and send a Transaction at a specified file path.
-func (c GlowClient) SignMultiAndSendTxFromFile(
+func (c *GlowClient) SignMultiAndSendTxFromFile(
 	file string,
 	proposer Account,
 	payer Account,
