@@ -1,6 +1,6 @@
 # glow
 
-Flow development in GO!
+Flow development in GO! Primarly used to rapidly test and debug smart contracts in controlled local environments.
 
 ---
 
