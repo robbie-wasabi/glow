@@ -33,7 +33,6 @@ func TestDepositFlowTokens(t *testing.T) {
 
 			recipient, err := client.CreateAccount(
 				privKey,
-				svcAcct,
 			)
 			So(err, ShouldBeNil)
 			So(recipient, ShouldNotBeNil)
@@ -43,12 +42,13 @@ func TestDepositFlowTokens(t *testing.T) {
 				amount, err := cadence.NewUFix64(s)
 				So(err, ShouldBeNil)
 
-				res, err := client.SignAndSendTxFromFile(
+				res, err := client.NewTxFromFile(
 					TxPath("flow_transfer"),
 					svcAcct,
+				).Args(
 					amount,
 					recipient.CadenceAddress(),
-				)
+				).SignAndSend()
 				So(err, ShouldBeNil)
 				So(res, ShouldNotBeNil)
 				So(res.Error, ShouldBeNil)

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	. "github.com/rrossilli/glow/model"
+	. "github.com/rrossilli/glow/tmp"
 	. "github.com/rrossilli/glow/util"
 
 	"github.com/onflow/cadence"
@@ -77,33 +78,32 @@ func (c GlowClient) AccountNamesSorted() []string {
 	return sorted
 }
 
-// Create a new account on chain
-func (c *GlowClient) CreateAccount(
-	privKey crypto.PrivateKey,
-	proposer Account,
-) (*Account, error) {
-	t := `
-		transaction(publicKey: String) {
-			prepare(signer: AuthAccount) {
-				let account = AuthAccount(payer: signer)
-				let accountKey = PublicKey(
-					publicKey: publicKey.decodeHex(),
-					signatureAlgorithm: SignatureAlgorithm.ECDSA_P256
-				)
-				account.keys.add(
-					publicKey: accountKey,
-					hashAlgorithm: HashAlgorithm.SHA3_256,
-					weight: 1000.0
-				)
-			}
-		}
-	`
+// Create a new account on chain with a generic/unsafe seed phrase.
+// These accounts are considered disposable as they have unsafe keys
+func (c GlowClient) CreateDisposableAccount() (*Account, error) {
+	privKey, err := c.NewPrivateKey(DEFAULT_KEYS_SEED_PHRASE)
+	if err != nil {
+		return nil, err
+	}
 
-	txRes, err := c.SignAndSendTx(
-		t,
-		proposer,
+	acct, err := c.CreateAccount(privKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return acct, err
+}
+
+// Create a new account on chain
+func (c GlowClient) CreateAccount(
+	privKey crypto.PrivateKey,
+) (*Account, error) {
+	svcAcct := c.GetSvcAcct()
+	txRes, err := c.NewTx(
+		[]byte(TX_CREATE_ACCOUNT),
+		svcAcct,
 		cadence.String(RemoveHexPrefix(privKey.PublicKey().String())),
-	)
+	).SignAndSend()
 	if err != nil {
 		return nil, err
 	}

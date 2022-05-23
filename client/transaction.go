@@ -11,89 +11,117 @@ import (
 )
 
 type Tx struct {
-	FlowTransaction flow.Transaction
-	Client          *GlowClient
+	cdc         []byte
+	args        []cadence.Value
+	payer       Account
+	proposer    Account
+	authorizers []Account
+	client      *GlowClient // todo:
 }
 
-// Create new Transaction
-func (c *GlowClient) tx(
+// Unsigned transaction contructor.
+// Assumes that the proposer is also the gas payer and sole authorizer
+func (c *GlowClient) NewTx(
 	cdc []byte,
 	proposer Account,
-	payer Account,
-	authorizers []Account,
 	args ...cadence.Value,
-) (*Tx, error) {
-	tx, err := c.Services.Transactions.Build(
-		proposer.FlowAddress(),
-		FlowAddressesFromAccounts(authorizers),
-		proposer.FlowAddress(),
-		0, // todo: which key?
-		cdc,
-		"", // is this important?
-		c.gasLimit,
-		args,
-		c.network,
-		true,
-	)
-	if err != nil {
-		return nil, err
+) Tx {
+	return Tx{
+		cdc:      cdc,
+		args:     args,
+		proposer: proposer,
+		payer:    proposer,
+		authorizers: []Account{
+			proposer,
+		},
+		client: c,
 	}
-
-	wrappedTx := Tx{
-		FlowTransaction: *tx.FlowTransaction(),
-		Client:          c,
-	}
-
-	return &wrappedTx, nil
 }
 
-// Create new Transaction from cadence string
-func (c *GlowClient) NewTx(
+// Unsigned transaction contructor.
+// Assumes that the proposer is also the gas payer and sole authorizer
+func (c *GlowClient) NewTxFromString(
 	cdc string,
 	proposer Account,
-	payer Account,
-	authorizers []Account,
-	args []cadence.Value,
-) (*Tx, error) {
-	tx, err := c.tx(
-		[]byte(cdc),
-		proposer,
-		payer,
-		authorizers,
-		args...,
-	)
-	if err != nil {
-		return nil, err
+	args ...cadence.Value,
+) Tx {
+	return Tx{
+		cdc:      []byte(cdc),
+		args:     args,
+		proposer: proposer,
+		payer:    proposer,
+		authorizers: []Account{
+			proposer,
+		},
+		client: c,
 	}
-
-	return tx, nil
 }
 
-// Create new Transaction from file path
+// Unsigned transaction contructor.
+// Assumes that the proposer is also the gas payer and sole authorizer
 func (c *GlowClient) NewTxFromFile(
 	file string,
 	proposer Account,
-	payer Account,
-	authorizers []Account,
 	args ...cadence.Value,
-) (*Tx, error) {
+) Tx {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
-		return nil, err
+		panic(fmt.Sprintf("tx not found at: %s", file))
 	}
 
-	tx, err := c.tx(
-		[]byte(cdc),
-		proposer,
-		payer,
-		authorizers,
-		args...,
-	)
-	if err != nil {
-		return nil, err
+	return Tx{
+		cdc:      []byte(cdc),
+		args:     args,
+		proposer: proposer,
+		payer:    proposer,
+		authorizers: []Account{
+			proposer,
+		},
+		client: c,
 	}
+}
 
-	return tx, nil
+// Specify args
+func (t Tx) Args(args ...cadence.Value) Tx {
+	t.args = args
+	return t
+}
+
+// Append arg
+func (t Tx) AddArg(arg cadence.Value) Tx {
+	t.args = append(t.args, arg)
+	return t
+}
+
+// Specify payer
+func (t Tx) Payer(p Account) Tx {
+	t.payer = p
+	t.authorizers = append(t.authorizers, p)
+	return t
+}
+
+// Specify proposer
+func (t Tx) Proposer(p Account) Tx {
+	t.proposer = p
+	t.authorizers = append(t.authorizers, p)
+	return t
+}
+
+// Specify tx authorizers (typically unneeded)
+func (t Tx) Authorizers(a ...Account) Tx {
+	t.authorizers = a
+	return t
+}
+
+// Append tx authorizer
+func (t Tx) AddAuthorizer(a Account) Tx {
+	t.authorizers = append(t.authorizers, a)
+	return t
+}
+
+type SignedTx struct {
+	flowTx flow.Transaction
+	client *GlowClient
 }
 
 // Create new crypto signer
@@ -106,22 +134,39 @@ func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 	return crypto.NewInMemorySigner(pk, c.HashAlgo), nil
 }
 
-// Sign a Transaction with multiple signers
-func (tx *Tx) Sign(authorizers ...Account) error {
+// Sign tx
+func (t Tx) Sign() (*SignedTx, error) {
 	// map to slice of crypto signers
 	var signers []crypto.Signer
-	for _, a := range authorizers {
-		s, err := tx.Client.newInMemorySigner(a.PrivKey)
+	for _, a := range t.authorizers {
+		s, err := t.client.newInMemorySigner(a.PrivKey)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		signers = append(signers, s)
 	}
 
 	// map to slice of flow addresses
 	var addresses []flow.Address
-	for _, a := range authorizers {
+	for _, a := range t.authorizers {
 		addresses = append(addresses, a.FlowAddress())
+	}
+
+	// build flow tx
+	flowTx, err := t.client.Services.Transactions.Build(
+		t.proposer.FlowAddress(),
+		FlowAddressesFromAccounts(t.authorizers),
+		t.proposer.FlowAddress(),
+		0, // todo: which key?
+		t.cdc,
+		"", // is this important?
+		t.client.gasLimit,
+		t.args,
+		t.client.network,
+		true,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	// sign transaction with each signer
@@ -130,25 +175,28 @@ func (tx *Tx) Sign(authorizers ...Account) error {
 		signer := signers[i]
 
 		if i == 0 {
-			err := tx.FlowTransaction.SignEnvelope(signerAddress, 0, signer)
+			err := flowTx.FlowTransaction().SignEnvelope(signerAddress, 0, signer)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		} else {
-			err := tx.FlowTransaction.SignPayload(signerAddress, 0, signer)
+			err := flowTx.FlowTransaction().SignPayload(signerAddress, 0, signer)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
 
-	return nil
+	return &SignedTx{
+		flowTx: *flowTx.FlowTransaction(),
+		client: t.client,
+	}, err
 }
 
 // Send a signed Transaction
-func (signedTx Tx) Send() (*flow.TransactionResult, error) {
-	txBytes := []byte(fmt.Sprintf("%x", signedTx.FlowTransaction.Encode()))
-	_, res, err := signedTx.Client.Services.Transactions.SendSigned(txBytes, true)
+func (signedTx SignedTx) Send() (*flow.TransactionResult, error) {
+	txBytes := []byte(fmt.Sprintf("%x", signedTx.flowTx.Encode()))
+	_, res, err := signedTx.client.Services.Transactions.SendSigned(txBytes, true)
 	if err != nil {
 		return nil, err
 	}
@@ -159,122 +207,17 @@ func (signedTx Tx) Send() (*flow.TransactionResult, error) {
 	return res, nil
 }
 
-// Sign and send a Transaction from string. Assumes that proposer is also payer
-func (c *GlowClient) SignAndSendTx(
-	cdc string,
-	proposer Account,
-	args ...cadence.Value,
-) (*flow.TransactionResult, error) {
-	tx, err := c.NewTx(
-		cdc,
-		proposer,
-		proposer,
-		[]Account{proposer},
-		args,
-	)
+// Sign and send a transaction
+func (tx Tx) SignAndSend() (*flow.TransactionResult, error) {
+	signedTx, err := tx.Sign()
 	if err != nil {
 		return nil, err
 	}
 
-	if err = tx.Sign(proposer); err != nil {
-		return nil, err
-	}
-
-	res, err := tx.Send()
+	txRes, err := signedTx.Send()
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
-}
-
-// Sign and send a Transaction at a specified file path. Assumes that proposer is also payer
-func (c *GlowClient) SignAndSendTxFromFile(
-	file string,
-	proposer Account,
-	args ...cadence.Value,
-) (*flow.TransactionResult, error) {
-	tx, err := c.NewTxFromFile(
-		file,
-		proposer,
-		proposer,
-		[]Account{proposer},
-		args...,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Sign(proposer); err != nil {
-		return nil, err
-	}
-
-	res, err := tx.Send()
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// Sign and send a Transaction at
-func (c *GlowClient) SignMultiAndSendTx(
-	cdc string,
-	proposer Account,
-	payer Account,
-	authorizers []Account,
-	args ...cadence.Value,
-) (*flow.TransactionResult, error) {
-	tx, err := c.NewTx(
-		cdc,
-		proposer,
-		payer,
-		authorizers,
-		args,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Sign(authorizers...); err != nil {
-		return nil, err
-	}
-
-	res, err := tx.Send()
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
-}
-
-// Sign and send a Transaction at a specified file path.
-func (c *GlowClient) SignMultiAndSendTxFromFile(
-	file string,
-	proposer Account,
-	payer Account,
-	authorizers []Account,
-	args ...cadence.Value,
-) (*flow.TransactionResult, error) {
-	tx, err := c.NewTxFromFile(
-		file,
-		proposer,
-		payer,
-		authorizers,
-		args...,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if err = tx.Sign(authorizers...); err != nil {
-		return nil, err
-	}
-
-	res, err := tx.Send()
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return txRes, nil
 }

@@ -8,6 +8,7 @@ import (
 	. "github.com/rrossilli/glow/util"
 )
 
+// Account struct as it typically appears in a flow.json
 type Account struct {
 	Address string `json:"address"`
 	PrivKey string `json:"key"`
