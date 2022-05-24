@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"io/ioutil"
+	"path"
 	"strings"
 
 	. "github.com/rrossilli/glow/util"
@@ -10,7 +11,7 @@ import (
 
 // Retrieve cadence from file and replace imports with addresses from specified flow.json
 func (c GlowClient) CadenceFromFile(file string) (string, error) {
-	p := c.root + file
+	p := path.Join(c.root, file)
 	cdc, err := ioutil.ReadFile(p)
 	if err != nil {
 		return "", err
