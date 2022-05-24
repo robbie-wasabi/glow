@@ -99,8 +99,9 @@ func (f FlowJSON) AccountNamesSorted(network string) []string {
 	for _, o := range EMULATOR_ADDRESS_ORDER {
 		for n, a := range f.Accounts {
 			if a.Address == o {
-				name := strings.ReplaceAll(n, fmt.Sprintf("%s-", network), "")
-				sorted = append(sorted, name)
+				// name := strings.ReplaceAll(n, fmt.Sprintf("%s-", network), "")
+				// sorted = append(sorted, name)
+				sorted = append(sorted, n)
 			}
 		}
 	}

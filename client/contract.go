@@ -15,7 +15,7 @@ func (c GlowClient) GetContractCdc(name string) ContractCdc {
 		panic(fmt.Sprintf("contract not found in flow.json: %s", name))
 	}
 
-	cdc, err := c.CadenceFromFile(RemoveFirstChar(contract.Source))
+	cdc, err := c.CadenceFromFile(contract.Source)
 	if err != nil {
 		panic(err)
 	}
