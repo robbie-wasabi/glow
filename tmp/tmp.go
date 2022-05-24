@@ -9,6 +9,14 @@ const (
         }
     `
 
+	TX_REMOVE_CONTRACT = `
+        transaction(name: String) {
+            prepare(signer: AuthAccount) {
+                signer.contracts.remove(name: name)
+            }
+        }
+    `
+
 	TX_CREATE_ACCOUNT = `
 		transaction(publicKey: String) {
 			prepare(signer: AuthAccount) {
