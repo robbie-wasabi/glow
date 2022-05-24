@@ -119,6 +119,7 @@ type GlowClient struct {
 	State    *flowkit.State
 	HashAlgo crypto.HashAlgorithm
 	SigAlgo  crypto.SignatureAlgorithm
+	SvcAcct  Account
 	gasLimit uint64
 }
 
@@ -201,6 +202,8 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		service = services.NewServices(gw, state, logger)
 	}
 
+	svcAcct := flowJSON.GetSvcAcct(b.Network)
+
 	wrappedClient := GlowClient{
 		network:  b.Network,
 		root:     b.Root,
@@ -211,6 +214,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		HashAlgo: b.HashAlgo,
 		SigAlgo:  b.SigAlgo,
 		gasLimit: b.GasLim,
+		SvcAcct:  svcAcct,
 	}
 
 	if b.InitAccts {
@@ -226,7 +230,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 
 // Submit transactions to initialize accounts sourced from flow.json
 func (c GlowClient) initAccounts() {
-	accounts := c.AccountsSorted()
+	accounts := c.FlowJSON.AccountsSorted()
 	for i, a := range accounts {
 		// skip svc account
 		if i == 0 {
@@ -246,13 +250,13 @@ func (c GlowClient) initAccounts() {
 
 // Submit transactions to deploy contracts to existing accounts sourced from flow.json
 func (c GlowClient) deployContracts() {
-	acctNames := c.AccountNamesSorted() // sorted list of account names
+	acctNames := c.FlowJSON.AccountNamesSorted(c.network) // sorted list of account names
 	for _, a := range acctNames {
-		d := c.GetAccountDeployment(a)
+		d := c.FlowJSON.GetAccountDeployment(c.network, a)
 		for _, d := range d {
 			// get acct and deploy contract
-			acct := c.GetAccount(a)
-			contract := c.GetContract(d)
+			acct := c.FlowJSON.GetAccount(a)
+			contract := c.GetContractCdc(d)
 			txRes, err := c.NewTxFromString(
 				TX_DEPLOY_CONTRACT,
 				acct,

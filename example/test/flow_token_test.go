@@ -1,4 +1,4 @@
-package fcl
+package test
 
 import (
 	"fmt"
@@ -12,10 +12,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-const (
-	GENERATE_KEYS_SEED_PHRASE = "elephant ears space cowboy octopus rodeo potato cannon pineapple"
-)
-
 // Test Deposit Flow Tokens from service account into a newly created account
 func TestDepositFlowTokens(t *testing.T) {
 	Convey("Create a client", t, func() {
@@ -24,7 +20,7 @@ func TestDepositFlowTokens(t *testing.T) {
 		client := NewGlowClient().Start()
 
 		// get service account
-		svcAcct := client.GetSvcAcct()
+		svcAcct := client.SvcAcct
 
 		Convey("Create a new account on the flow blockchain", func() {
 			privKey, err := client.NewPrivateKey(GENERATE_KEYS_SEED_PHRASE)

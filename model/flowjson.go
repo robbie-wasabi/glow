@@ -3,6 +3,9 @@ package model
 import (
 	"fmt"
 	"sort"
+	"strings"
+
+	. "github.com/rrossilli/glow/consts"
 )
 
 // Maps to a standard flow.json
@@ -56,13 +59,52 @@ func (f FlowJSON) GetAccount(name string) Account {
 	return account
 }
 
-// Names of accounts
-func (f FlowJSON) AccountNames() []string {
-	keys := make([]string, 0, len(f.Accounts))
+// Get Accounts for network
+func (f FlowJSON) GetAccounts(network string) map[string]Account {
+	accounts := map[string]Account{}
+	for n, a := range f.Accounts {
+		if strings.Contains(n, network) {
+			accounts[n] = a
+		}
+	}
+	return accounts
+}
+
+// Names of accounts for network
+func (f FlowJSON) AccountNames(network string) []string {
+	accounts := f.GetAccounts(network)
+	keys := make([]string, 0, len(accounts))
 	for k := range f.Accounts {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+// Sort accounts for network by predetermined emulator address order.
+func (f FlowJSON) AccountsSorted() []Account {
+	var sorted []Account
+	for _, o := range EMULATOR_ADDRESS_ORDER {
+		for _, a := range f.Accounts {
+			if a.Address == o {
+				sorted = append(sorted, a)
+			}
+		}
+	}
+	return sorted
+}
+
+// Sort account names for network by predetermined emulator address order.
+func (f FlowJSON) AccountNamesSorted(network string) []string {
+	var sorted []string
+	for _, o := range EMULATOR_ADDRESS_ORDER {
+		for n, a := range f.Accounts {
+			if a.Address == o {
+				name := strings.ReplaceAll(n, fmt.Sprintf("%s-", network), "")
+				sorted = append(sorted, name)
+			}
+		}
+	}
+	return sorted
 }
 
 // Get deployment by name
