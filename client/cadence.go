@@ -22,31 +22,38 @@ func (c GlowClient) CadenceFromFile(file string) (string, error) {
 	return editedCdc, nil
 }
 
-// Replaces "0x" imports and import paths in cadence with addresses from specified flow.json
+// Replaces "0x" imports and file import paths in cadence with addresses from specified flow.json
 func (c GlowClient) replaceImportAddresses(cdc string) string {
-	keys := c.FlowJSON.ContractNamesSortedByLength(false)
+	lines := strings.Split(string(cdc), "\n")
+	for i, line := range lines {
+		lines[i] = replaceFileImportPath(line)
+	}
+	newCdc := strings.Join(lines, "\n")
 
 	// replace 0x imports i.e. "import Contract from 0xContract"
+	keys := c.FlowJSON.ContractNamesSortedByLength(false)
 	for _, key := range keys {
 		co := c.FlowJSON.Contracts[key]
-		cdc = strings.Replace(
-			cdc,
+		newCdc = strings.Replace(
+			newCdc,
 			PrependHexPrefix(key),
 			co.Address(c.network),
 			-1,
 		)
 	}
 
-	// replace import paths i.e. "import Contract from '../contracts/Contract.cdc'"
-	lines := strings.Split(string(cdc), "\n")
-	for i, line := range lines {
-		for _, key := range keys {
-			co := c.FlowJSON.Contracts[key]
-			if strings.Contains(line, fmt.Sprintf("import %v from", key)) {
-				lines[i] = fmt.Sprintf("import %v from %v", key, co.Address(c.network))
-			}
-		}
-	}
+	return newCdc
+}
 
-	return cdc
+// Replace relative file import path with "0x path"
+// i.e. import NonFungibleToken from "./NonFungibleToken.cdc" as ...from 0xNonFungibleToken
+func replaceFileImportPath(s string) string {
+	if strings.Contains(s, "import") &&
+		strings.Contains(s, "from") &&
+		strings.Contains(s, `.cdc`) {
+		fields := strings.Fields(s)
+		fields[3] = fmt.Sprintf("0x%s", fields[1])
+		return strings.Join(fields, " ")
+	}
+	return s
 }

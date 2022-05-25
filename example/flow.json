@@ -26,6 +26,13 @@
         "emulator": "0xf8d6e0586b0a20c7",
         "testnet": "0x631e88ae7f1d7c20"
       }
+    },
+    "NFTStorefront": {
+      "source": "./contract/NFTStorefront.cdc",
+      "aliases": {
+        "emulator": "0xf8d6e0586b0a20c7",
+        "testnet": "0x94b06cfca1d8a476"
+      }
     }
   },
   "networks": {
@@ -45,7 +52,7 @@
   },
   "deployments": {
     "emulator": {
-      "emulator-svc": ["NonFungibleToken"]
+      "emulator-svc": ["NonFungibleToken", "NFTStorefront"]
     }
   }
 }
