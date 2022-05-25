@@ -11,3 +11,8 @@ init:
 
 flow-token-test:
 	go test ./example/test -run TestDepositFlowTokens -v 3
+
+# todo: add more tests
+
+test:
+	make flow-token-test	

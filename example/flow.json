@@ -7,17 +7,24 @@
   },
   "contracts": {
     "FungibleToken": {
-      "source": "./core/contract/FungibleToken.cdc",
+      "source": "./contract/FungibleToken.cdc",
       "aliases": {
         "emulator": "0xee82856bf20e2aa6",
         "testnet": "0x9a0766d93b6608b7"
       }
     },
     "FlowToken": {
-      "source": "./core/contract/FlowToken.cdc",
+      "source": "./contract/FlowToken.cdc",
       "aliases": {
         "emulator": "0x0ae53cb6e3f42a79",
         "testnet": "0x7e60df042a9c0868"
+      }
+    },
+    "NonFungibleToken": {
+      "source": "./contract/NonFungibleToken.cdc",
+      "aliases": {
+        "emulator": "0xf8d6e0586b0a20c7",
+        "testnet": "0x631e88ae7f1d7c20"
       }
     }
   },
@@ -30,7 +37,15 @@
     "emulator-svc": {
       "address": "f8d6e0586b0a20c7",
       "key": "3a63ae4f8fffacd89d1b574d87fe448a0f848da7d0a45c04b60744b1c3905a14"
+    },
+    "emulator-test": {
+      "address": "0x01cf0e2f2f715450",
+      "key": "4a4f7a1d07b441135489823f1bcdc27ba607c1916b3b182a2b7ee91cf11eb5f6"
     }
   },
-  "deployments": {}
+  "deployments": {
+    "emulator": {
+      "emulator-svc": ["NonFungibleToken"]
+    }
+  }
 }

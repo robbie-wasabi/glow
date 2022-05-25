@@ -37,7 +37,7 @@ const (
 
 type GlowClientBuilder struct {
 	InMemory     bool
-	InitAccts    bool
+	IniAccts     bool
 	DepContracts bool
 	GasLim       uint64
 	HashAlgo     crypto.HashAlgorithm
@@ -50,7 +50,7 @@ type GlowClientBuilder struct {
 }
 
 func (b *GlowClientBuilder) InitAccounts(l bool) *GlowClientBuilder {
-	b.InitAccts = l
+	b.IniAccts = l
 	return b
 }
 
@@ -58,6 +58,8 @@ func (b *GlowClientBuilder) DeployContracts(l bool) *GlowClientBuilder {
 	b.DepContracts = l
 	return b
 }
+
+// todo: specify which contracts to deploy
 
 func (b *GlowClientBuilder) HashAlgorithm(algo string) *GlowClientBuilder {
 	b.HashAlgo = crypto.StringToHashAlgorithm(algo)
@@ -100,7 +102,7 @@ func NewGlowClientBuilder(network, root string, logLvl int) *GlowClientBuilder {
 	return &GlowClientBuilder{
 		Network:      network,
 		InMemory:     inMemory,
-		InitAccts:    initAccounts,
+		IniAccts:     initAccounts,
 		DepContracts: depContracts,
 		LogLvl:       logLvl,
 		GasLim:       9999,
@@ -178,11 +180,10 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 	flowJSON := parseFlowJSON(fJSONPath)
 
 	logger.Info("\n==================================")
-	logger.Info("STARTING CLIENT")
-	logger.Info(fmt.Sprintf("network: %v", b.Network))
-	logger.Info(fmt.Sprintf("in memory: %v", b.InMemory))
-	logger.Info(fmt.Sprintf("flow.json: %v", b.Root))
-	logger.Info("==================================\n")
+	logger.Info("STARTING GLOW CLIENT:\n")
+	logger.Info(fmt.Sprintf("NETWORK: %v", b.Network))
+	logger.Info(fmt.Sprintf("IN MEMORY: %v", b.InMemory))
+	logger.Info(fmt.Sprintf("ROOT: %v", b.Root))
 
 	var service *services.Services
 	if b.InMemory {
@@ -217,7 +218,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		SvcAcct:  svcAcct,
 	}
 
-	if b.InitAccts {
+	if b.IniAccts {
 		wrappedClient.initAccounts()
 	}
 
@@ -225,11 +226,14 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		wrappedClient.deployContracts()
 	}
 
+	logger.Info("==================================")
+
 	return &wrappedClient
 }
 
 // Submit transactions to initialize accounts sourced from flow.json
 func (c GlowClient) initAccounts() {
+	c.Logger.Info("\nCREATING ACCOUNTS:\n")
 	accounts := c.FlowJSON.AccountsSorted()
 	for i, a := range accounts {
 		// skip svc account
@@ -250,6 +254,7 @@ func (c GlowClient) initAccounts() {
 
 // Submit transactions to deploy contracts to existing accounts sourced from flow.json
 func (c GlowClient) deployContracts() {
+	c.Logger.Info("\nDEPLOYING CONTRACTS:\n")
 	acctNames := c.FlowJSON.AccountNamesSorted(c.network) // sorted list of account names
 	for _, a := range acctNames {
 		d := c.FlowJSON.GetAccountDeployment(c.network, a)

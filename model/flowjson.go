@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	. "github.com/rrossilli/glow/consts"
+	. "github.com/rrossilli/glow/util"
 )
 
 // Maps to a standard flow.json
@@ -85,7 +86,7 @@ func (f FlowJSON) AccountsSorted() []Account {
 	var sorted []Account
 	for _, o := range EMULATOR_ADDRESS_ORDER {
 		for _, a := range f.Accounts {
-			if a.Address == o {
+			if PrependHexPrefix(a.Address) == PrependHexPrefix(o) {
 				sorted = append(sorted, a)
 			}
 		}
@@ -98,7 +99,7 @@ func (f FlowJSON) AccountNamesSorted(network string) []string {
 	var sorted []string
 	for _, o := range EMULATOR_ADDRESS_ORDER {
 		for n, a := range f.Accounts {
-			if a.Address == o {
+			if PrependHexPrefix(a.Address) == PrependHexPrefix(o) {
 				// name := strings.ReplaceAll(n, fmt.Sprintf("%s-", network), "")
 				// sorted = append(sorted, name)
 				sorted = append(sorted, n)
@@ -117,5 +118,5 @@ func (f FlowJSON) GetDeployment(network string) map[string][]string {
 // Get deployment contracts by account name
 func (f FlowJSON) GetAccountDeployment(network, name string) []string {
 	deployment := f.Deployments[network]
-	return deployment[fmt.Sprintf("%s-%s", network, name)]
+	return deployment[name]
 }
