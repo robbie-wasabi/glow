@@ -13,9 +13,9 @@ type Sc struct {
 }
 
 // Create new Script
-func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) Sc {
+func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
 	b := []byte(c.replaceImportAddresses(string(bytes)))
-	return Sc{
+	return &Sc{
 		cdc:    b,
 		args:   args,
 		client: c,
@@ -23,9 +23,9 @@ func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) Sc {
 }
 
 // Create new Script from string
-func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) Sc {
+func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) *Sc {
 	b := []byte(c.replaceImportAddresses(cdc))
-	return Sc{
+	return &Sc{
 		cdc:    b,
 		args:   args,
 		client: c,
