@@ -11,12 +11,24 @@ import (
 
 // Maps to a standard flow.json
 type FlowJSON struct {
-	Emulator    interface{}                    `json:"emulators"` // todo
-	Contracts   map[string]Contract            `json:"contracts"`
-	Networks    map[string]string              `json:"networks"`
-	Accounts    map[string]Account             `json:"accounts"`
-	Deployments map[string]map[string][]string `json:"deployments"`
+	Emulator    interface{} `json:"emulators"` // todo
+	Contracts   Contracts   `json:"contracts"`
+	Networks    Networks    `json:"networks"`
+	Accounts    Accounts    `json:"accounts"`
+	Deployments Deployments `json:"deployments"`
 }
+
+type Contracts map[string]Contract
+
+type Accounts map[string]Account
+
+type Network string
+
+type Networks map[string]Network
+
+type Deployment map[string][]string
+
+type Deployments map[Network]Deployment
 
 // Get contract by name
 func (f FlowJSON) GetContract(name string) Contract {
@@ -50,7 +62,7 @@ func (f FlowJSON) ContractNamesSortedByLength(asc bool) []string {
 }
 
 // Get account with "svc" suffix
-func (f FlowJSON) GetSvcAcct(network string) Account {
+func (f FlowJSON) GetSvcAcct(network Network) Account {
 	return f.GetAccount(fmt.Sprintf("%s-svc", network))
 }
 
@@ -61,7 +73,7 @@ func (f FlowJSON) GetAccount(name string) Account {
 }
 
 // Get Accounts for network
-func (f FlowJSON) GetAccounts(network string) map[string]Account {
+func (f FlowJSON) GetAccounts(network Network) map[string]Account {
 	accounts := map[string]Account{}
 	for n, a := range f.Accounts {
 		if strings.Contains(n, network) {
@@ -72,7 +84,7 @@ func (f FlowJSON) GetAccounts(network string) map[string]Account {
 }
 
 // Names of accounts for network
-func (f FlowJSON) AccountNames(network string) []string {
+func (f FlowJSON) AccountNames(network Network) []string {
 	accounts := f.GetAccounts(network)
 	keys := make([]string, 0, len(accounts))
 	for k := range f.Accounts {
@@ -95,7 +107,7 @@ func (f FlowJSON) AccountsSorted() []Account {
 }
 
 // Sort account names for network by predetermined emulator address order.
-func (f FlowJSON) AccountNamesSorted(network string) []string {
+func (f FlowJSON) AccountNamesSorted(network Network) []string {
 	var sorted []string
 	for _, o := range EMULATOR_ADDRESS_ORDER {
 		for n, a := range f.Accounts {
@@ -110,13 +122,13 @@ func (f FlowJSON) AccountNamesSorted(network string) []string {
 }
 
 // Get deployment by name
-func (f FlowJSON) GetDeployment(network string) map[string][]string {
+func (f FlowJSON) GetDeployment(network Network) map[string][]string {
 	deployment := f.Deployments[network]
 	return deployment
 }
 
 // Get deployment contracts by account name
-func (f FlowJSON) GetAccountDeployment(network, name string) []string {
+func (f FlowJSON) GetAccountDeployment(network Network, name string) []string {
 	deployment := f.Deployments[network]
 	return deployment[name]
 }
