@@ -263,7 +263,7 @@ func (c GlowClient) deployContracts() {
 			acct := c.FlowJSON.GetAccount(a)
 			contract := c.GetContractCdc(d)
 			txRes, err := c.NewTxFromString(
-				TX_DEPLOY_CONTRACT,
+				TX_CONTRACT_DEPLOY,
 				acct,
 				contract.NameAsCadenceString(),
 				cadence.String(hex.EncodeToString(contract.CdcBytes())),
