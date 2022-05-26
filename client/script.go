@@ -33,8 +33,21 @@ func (c GlowClient) NewScFromFile(file string) (*Sc, error) {
 	}, nil
 }
 
-// Execute a Script from a string
+// Execute a Script from bytes
 func (c GlowClient) ExecSc(
+	bytes []byte,
+	args ...cadence.Value,
+) (cadence.Value, error) {
+	result, err := c.Services.Scripts.Execute(bytes, args, "", c.network)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// Execute a Script from a string
+func (c GlowClient) ExecScFromString(
 	cdc string,
 	args ...cadence.Value,
 ) (cadence.Value, error) {
