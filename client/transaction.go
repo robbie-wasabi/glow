@@ -26,8 +26,9 @@ func (c *GlowClient) NewTx(
 	proposer Account,
 	args ...cadence.Value,
 ) *Tx {
+	b := []byte(c.replaceImportAddresses(string(cdc)))
 	return &Tx{
-		cdc:      cdc,
+		cdc:      b,
 		args:     args,
 		proposer: proposer,
 		payer:    proposer,
@@ -45,8 +46,9 @@ func (c *GlowClient) NewTxFromString(
 	proposer Account,
 	args ...cadence.Value,
 ) *Tx {
+	b := []byte(c.replaceImportAddresses(cdc))
 	return &Tx{
-		cdc:      []byte(cdc),
+		cdc:      b,
 		args:     args,
 		proposer: proposer,
 		payer:    proposer,
