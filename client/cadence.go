@@ -10,7 +10,7 @@ import (
 )
 
 // Retrieve cadence from file and replace imports with addresses from specified flow.json
-func (c GlowClient) CadenceFromFile(file string) (string, error) {
+func (c *GlowClient) CadenceFromFile(file string) (string, error) {
 	p := path.Join(c.root, file)
 	cdc, err := ioutil.ReadFile(p)
 	if err != nil {
@@ -23,7 +23,7 @@ func (c GlowClient) CadenceFromFile(file string) (string, error) {
 }
 
 // Replaces "0x" imports and file import paths in cadence with addresses from specified flow.json
-func (c GlowClient) replaceImportAddresses(cdc string) string {
+func (c *GlowClient) replaceImportAddresses(cdc string) string {
 	lines := strings.Split(string(cdc), "\n")
 	for i, line := range lines {
 		lines[i] = replaceFileImportPath(line)

@@ -1,78 +1,67 @@
 package client
 
 import (
+	"fmt"
+
 	"github.com/onflow/cadence"
 )
 
-// todo: this struct might be overkill but I'm fond of the homogenous pattern it adheres to
 type Sc struct {
-	Script string
-	// todo: any more properties?
-}
-
-func (c GlowClient) sc(cdc string) string {
-	return c.replaceImportAddresses(cdc)
+	cdc    []byte
+	args   []cadence.Value
+	client *GlowClient
 }
 
 // Create new Script
-func (c GlowClient) NewSc(cdc string) Sc {
+func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) Sc {
+	b := []byte(c.replaceImportAddresses(string(bytes)))
 	return Sc{
-		Script: c.sc(cdc),
+		cdc:    b,
+		args:   args,
+		client: c,
+	}
+}
+
+// Create new Script from string
+func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) Sc {
+	b := []byte(c.replaceImportAddresses(cdc))
+	return Sc{
+		cdc:    b,
+		args:   args,
+		client: c,
 	}
 }
 
 // Create new Script from file
-func (c GlowClient) NewScFromFile(file string) (*Sc, error) {
+func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) *Sc {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
-		return nil, err
+		panic(fmt.Sprintf("sc not found at: %s", file))
 	}
+	b := []byte(c.replaceImportAddresses(cdc))
 
 	return &Sc{
-		Script: c.sc(cdc),
-	}, nil
+		cdc:    b,
+		args:   args,
+		client: c,
+	}
 }
 
-// Execute a Script from bytes
-func (c GlowClient) ExecSc(
-	bytes []byte,
-	args ...cadence.Value,
-) (cadence.Value, error) {
-	result, err := c.Services.Scripts.Execute(bytes, args, "", c.network)
+func (sc *Sc) Args(args ...cadence.Value) *Sc {
+	sc.args = args
+	return sc
+}
+
+func (sc *Sc) AddArg(arg cadence.Value) *Sc {
+	sc.args = append(sc.args, arg)
+	return sc
+}
+
+func (sc *Sc) Exec() (cadence.Value, error) {
+	result, err := sc.client.Services.Scripts.Execute(sc.cdc, sc.args, "", sc.client.network)
 	if err != nil {
 		return nil, err
 	}
 
 	return result, nil
-}
-
-// Execute a Script from a string
-func (c GlowClient) ExecScFromString(
-	cdc string,
-	args ...cadence.Value,
-) (cadence.Value, error) {
-	result, err := c.Services.Scripts.Execute([]byte(cdc), args, "", c.network)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-// Execute a Script at a specified file path
-func (c GlowClient) ExecScFromFile(
-	file string,
-	args ...cadence.Value,
-) (cadence.Value, error) {
-	sc, err := c.NewScFromFile(file)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := c.ExecSc(sc.Script, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }

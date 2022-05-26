@@ -9,7 +9,7 @@ import (
 )
 
 // Get Contract by name
-func (c GlowClient) GetContractCdc(name string) ContractCdc {
+func (c *GlowClient) GetContractCdc(name string) ContractCdc {
 	contract := c.FlowJSON.GetContract(name)
 	if IsEmpty(contract) {
 		panic(fmt.Sprintf("contract not found in flow.json: %s", name))

@@ -125,7 +125,7 @@ type GlowClient struct {
 	gasLimit uint64
 }
 
-func (c GlowClient) GetNetwork() string {
+func (c *GlowClient) GetNetwork() string {
 	return c.network
 }
 
@@ -232,7 +232,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 }
 
 // Submit transactions to initialize accounts sourced from flow.json
-func (c GlowClient) initAccounts() {
+func (c *GlowClient) initAccounts() {
 	c.Logger.Info("\nCREATING ACCOUNTS:\n")
 	accounts := c.FlowJSON.AccountsSorted()
 	for i, a := range accounts {
@@ -253,7 +253,7 @@ func (c GlowClient) initAccounts() {
 }
 
 // Submit transactions to deploy contracts to existing accounts sourced from flow.json
-func (c GlowClient) deployContracts() {
+func (c *GlowClient) deployContracts() {
 	c.Logger.Info("\nDEPLOYING CONTRACTS:\n")
 	acctNames := c.FlowJSON.AccountNamesSorted(c.network) // sorted list of account names
 	for _, a := range acctNames {

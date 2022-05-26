@@ -11,7 +11,7 @@ import (
 )
 
 // Get Account helper function
-func (c GlowClient) GetAccount(addr string) (*flow.Account, error) {
+func (c *GlowClient) GetAccount(addr string) (*flow.Account, error) {
 	a := flow.HexToAddress(addr)
 	acct, err := c.Services.Accounts.Get(a)
 	if err != nil {
@@ -23,7 +23,7 @@ func (c GlowClient) GetAccount(addr string) (*flow.Account, error) {
 
 // Create a new account on chain with a generic/unsafe seed phrase.
 // These accounts are considered disposable as they have unsafe keys
-func (c GlowClient) CreateDisposableAccount() (*Account, error) {
+func (c *GlowClient) CreateDisposableAccount() (*Account, error) {
 	privKey, err := c.NewPrivateKey(DEFAULT_KEYS_SEED_PHRASE)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (c GlowClient) CreateDisposableAccount() (*Account, error) {
 }
 
 // Create a new account on chain
-func (c GlowClient) CreateAccount(
+func (c *GlowClient) CreateAccount(
 	privKey crypto.PrivateKey,
 ) (*Account, error) {
 	svcAcct := c.FlowJSON.GetSvcAcct(c.network)

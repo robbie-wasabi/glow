@@ -25,8 +25,8 @@ func (c *GlowClient) NewTx(
 	cdc []byte,
 	proposer Account,
 	args ...cadence.Value,
-) Tx {
-	return Tx{
+) *Tx {
+	return &Tx{
 		cdc:      cdc,
 		args:     args,
 		proposer: proposer,
@@ -44,8 +44,8 @@ func (c *GlowClient) NewTxFromString(
 	cdc string,
 	proposer Account,
 	args ...cadence.Value,
-) Tx {
-	return Tx{
+) *Tx {
+	return &Tx{
 		cdc:      []byte(cdc),
 		args:     args,
 		proposer: proposer,
@@ -63,13 +63,13 @@ func (c *GlowClient) NewTxFromFile(
 	file string,
 	proposer Account,
 	args ...cadence.Value,
-) Tx {
+) *Tx {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
 		panic(fmt.Sprintf("tx not found at: %s", file))
 	}
 
-	return Tx{
+	return &Tx{
 		cdc:      []byte(cdc),
 		args:     args,
 		proposer: proposer,
@@ -82,39 +82,39 @@ func (c *GlowClient) NewTxFromFile(
 }
 
 // Specify args
-func (t Tx) Args(args ...cadence.Value) Tx {
+func (t *Tx) Args(args ...cadence.Value) *Tx {
 	t.args = args
 	return t
 }
 
 // Append arg
-func (t Tx) AddArg(arg cadence.Value) Tx {
+func (t *Tx) AddArg(arg cadence.Value) *Tx {
 	t.args = append(t.args, arg)
 	return t
 }
 
 // Specify payer
-func (t Tx) Payer(p Account) Tx {
+func (t *Tx) Payer(p Account) *Tx {
 	t.payer = p
 	t.authorizers = append(t.authorizers, p)
 	return t
 }
 
 // Specify proposer
-func (t Tx) Proposer(p Account) Tx {
+func (t *Tx) Proposer(p Account) *Tx {
 	t.proposer = p
 	t.authorizers = append(t.authorizers, p)
 	return t
 }
 
 // Specify tx authorizers (typically unneeded)
-func (t Tx) Authorizers(a ...Account) Tx {
+func (t *Tx) Authorizers(a ...Account) *Tx {
 	t.authorizers = a
 	return t
 }
 
 // Append tx authorizer
-func (t Tx) AddAuthorizer(a Account) Tx {
+func (t *Tx) AddAuthorizer(a Account) *Tx {
 	t.authorizers = append(t.authorizers, a)
 	return t
 }
@@ -135,7 +135,7 @@ func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 }
 
 // Sign tx
-func (t Tx) Sign() (*SignedTx, error) {
+func (t *Tx) Sign() (*SignedTx, error) {
 	// map to slice of crypto signers
 	var signers []crypto.Signer
 	for _, a := range t.authorizers {
@@ -194,7 +194,7 @@ func (t Tx) Sign() (*SignedTx, error) {
 }
 
 // Send a signed Transaction
-func (signedTx SignedTx) Send() (*flow.TransactionResult, error) {
+func (signedTx *SignedTx) Send() (*flow.TransactionResult, error) {
 	txBytes := []byte(fmt.Sprintf("%x", signedTx.flowTx.Encode()))
 	_, res, err := signedTx.client.Services.Transactions.SendSigned(txBytes, true)
 	if err != nil {
@@ -208,7 +208,7 @@ func (signedTx SignedTx) Send() (*flow.TransactionResult, error) {
 }
 
 // Sign and send a transaction
-func (tx Tx) SignAndSend() (*flow.TransactionResult, error) {
+func (tx *Tx) SignAndSend() (*flow.TransactionResult, error) {
 	signedTx, err := tx.Sign()
 	if err != nil {
 		return nil, err

@@ -38,7 +38,7 @@ func TestDepositFlowTokens(t *testing.T) {
 				amount, err := cadence.NewUFix64(s)
 				So(err, ShouldBeNil)
 
-				res, err := client.NewTxFromFile(
+				txRes, err := client.NewTxFromFile(
 					TxPath("flow_transfer"),
 					svcAcct,
 				).Args(
@@ -46,16 +46,16 @@ func TestDepositFlowTokens(t *testing.T) {
 					recipient.CadenceAddress(),
 				).SignAndSend()
 				So(err, ShouldBeNil)
-				So(res, ShouldNotBeNil)
-				So(res.Error, ShouldBeNil)
+				So(txRes, ShouldNotBeNil)
+				So(txRes.Error, ShouldBeNil)
 
 				Convey("Get flow token balance of account", func() {
-					result, err := client.ExecScFromFile(
+					result, err := client.NewScFromFile(
 						ScPath("flow_balance"),
 						recipient.CadenceAddress(),
-					)
+					).Exec()
 					So(err, ShouldBeNil)
-					So(result.ToGoValue(), ShouldBeGreaterThan, 1)
+					So(result.ToGoValue().(uint64), ShouldBeGreaterThan, 1)
 				})
 			})
 		})
