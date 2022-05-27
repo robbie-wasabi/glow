@@ -13,14 +13,14 @@ import (
 )
 
 // Test Deposit Flow Tokens from service account into a newly created account
-func TestDepositFlowTokens(t *testing.T) {
+func TestTransferFlow(t *testing.T) {
 	Convey("Create a client", t, func() {
 
 		// create and start new glow client
 		client := NewGlowClient().Start()
 
 		// get service account
-		svcAcct := client.SvcAcct
+		svc := client.SvcAcct
 
 		Convey("Create a new account on the flow blockchain", func() {
 			privKey, err := client.NewPrivateKey(GENERATE_KEYS_SEED_PHRASE)
@@ -40,7 +40,7 @@ func TestDepositFlowTokens(t *testing.T) {
 
 				txRes, err := client.NewTxFromFile(
 					TxPath("flow_transfer"),
-					svcAcct,
+					svc,
 				).Args(
 					amount,
 					recipient.CadenceAddress(),

@@ -12,7 +12,7 @@ type Sc struct {
 	client *GlowClient
 }
 
-// Create new Script
+// Create new script
 func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
 	b := []byte(c.replaceImportAddresses(string(bytes)))
 	return &Sc{
@@ -22,7 +22,7 @@ func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
 	}
 }
 
-// Create new Script from string
+// Create new script from string
 func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) *Sc {
 	b := []byte(c.replaceImportAddresses(cdc))
 	return &Sc{
@@ -32,7 +32,7 @@ func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) *Sc {
 	}
 }
 
-// Create new Script from file
+// Create new script from file
 func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) *Sc {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
@@ -47,17 +47,21 @@ func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) *Sc {
 	}
 }
 
+// Specify args
 func (sc *Sc) Args(args ...cadence.Value) *Sc {
 	sc.args = args
 	return sc
 }
 
+// Add arg to args
 func (sc *Sc) AddArg(arg cadence.Value) *Sc {
 	sc.args = append(sc.args, arg)
 	return sc
 }
 
+// Execute script
 func (sc *Sc) Exec() (cadence.Value, error) {
+	// we don't need to pass the file name as we have a different strategy to replace imports
 	result, err := sc.client.Services.Scripts.Execute(sc.cdc, sc.args, "", sc.client.network)
 	if err != nil {
 		return nil, err

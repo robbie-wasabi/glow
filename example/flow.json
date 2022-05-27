@@ -33,6 +33,18 @@
         "emulator": "0xf8d6e0586b0a20c7",
         "testnet": "0x94b06cfca1d8a476"
       }
+    },
+    "MetadataViews": {
+      "source": "./contract/MetadataViews.cdc",
+      "aliases": {
+        "emulator": "0xf8d6e0586b0a20c7"
+      }
+    },
+    "ExampleNFT": {
+      "source": "./contract/ExampleNFT.cdc",
+      "aliases": {
+        "emulator": "0xf8d6e0586b0a20c7"
+      }
     }
   },
   "networks": {
@@ -52,7 +64,12 @@
   },
   "deployments": {
     "emulator": {
-      "emulator-svc": ["NonFungibleToken", "NFTStorefront"]
+      "emulator-svc": [
+        "NonFungibleToken",
+        "NFTStorefront",
+        "MetadataViews",
+        "ExampleNFT"
+      ]
     }
   }
 }

@@ -89,7 +89,7 @@ func (t *Tx) Args(args ...cadence.Value) *Tx {
 	return t
 }
 
-// Append arg
+// Add arg to args
 func (t *Tx) AddArg(arg cadence.Value) *Tx {
 	t.args = append(t.args, arg)
 	return t
@@ -161,7 +161,7 @@ func (t *Tx) Sign() (*SignedTx, error) {
 		t.proposer.FlowAddress(),
 		0, // todo: which key?
 		t.cdc,
-		"", // is this important?
+		"", // we don't need to pass the file name as we have a different strategy to replace imports
 		t.client.gasLimit,
 		t.args,
 		t.client.network,

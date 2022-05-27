@@ -11,12 +11,22 @@ import (
 
 // Maps to a standard flow.json
 type FlowJSON struct {
-	Emulator    interface{}                    `json:"emulators"` // todo
-	Contracts   map[string]Contract            `json:"contracts"`
-	Networks    map[string]string              `json:"networks"`
-	Accounts    map[string]Account             `json:"accounts"`
-	Deployments map[string]map[string][]string `json:"deployments"`
+	Emulator    interface{} `json:"emulators"` // todo
+	Contracts   Contracts   `json:"contracts"`
+	Networks    Networks    `json:"networks"`
+	Accounts    Accounts    `json:"accounts"`
+	Deployments Deployments `json:"deployments"`
 }
+
+type Contracts map[string]Contract
+
+type Accounts map[string]Account
+
+type Networks map[string]string
+
+type Deployment map[string][]string
+
+type Deployments map[string]Deployment
 
 // Get contract by name
 func (f FlowJSON) GetContract(name string) Contract {
@@ -116,7 +126,7 @@ func (f FlowJSON) GetDeployment(network string) map[string][]string {
 }
 
 // Get deployment contracts by account name
-func (f FlowJSON) GetAccountDeployment(network, name string) []string {
+func (f FlowJSON) GetAccountDeployment(network string, name string) []string {
 	deployment := f.Deployments[network]
 	return deployment[name]
 }
