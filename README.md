@@ -1,4 +1,4 @@
-# glow
+# Glow
 
 Flow development in GO! Rapidly test your contracts in an embedded emulator, testnet, or mainnet.
 
