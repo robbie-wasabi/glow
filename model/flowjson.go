@@ -22,13 +22,11 @@ type Contracts map[string]Contract
 
 type Accounts map[string]Account
 
-type Network string
-
-type Networks map[string]Network
+type Networks map[string]string
 
 type Deployment map[string][]string
 
-type Deployments map[Network]Deployment
+type Deployments map[string]Deployment
 
 // Get contract by name
 func (f FlowJSON) GetContract(name string) Contract {
@@ -62,7 +60,7 @@ func (f FlowJSON) ContractNamesSortedByLength(asc bool) []string {
 }
 
 // Get account with "svc" suffix
-func (f FlowJSON) GetSvcAcct(network Network) Account {
+func (f FlowJSON) GetSvcAcct(network string) Account {
 	return f.GetAccount(fmt.Sprintf("%s-svc", network))
 }
 
@@ -73,7 +71,7 @@ func (f FlowJSON) GetAccount(name string) Account {
 }
 
 // Get Accounts for network
-func (f FlowJSON) GetAccounts(network Network) map[string]Account {
+func (f FlowJSON) GetAccounts(network string) map[string]Account {
 	accounts := map[string]Account{}
 	for n, a := range f.Accounts {
 		if strings.Contains(n, network) {
@@ -84,7 +82,7 @@ func (f FlowJSON) GetAccounts(network Network) map[string]Account {
 }
 
 // Names of accounts for network
-func (f FlowJSON) AccountNames(network Network) []string {
+func (f FlowJSON) AccountNames(network string) []string {
 	accounts := f.GetAccounts(network)
 	keys := make([]string, 0, len(accounts))
 	for k := range f.Accounts {
@@ -107,7 +105,7 @@ func (f FlowJSON) AccountsSorted() []Account {
 }
 
 // Sort account names for network by predetermined emulator address order.
-func (f FlowJSON) AccountNamesSorted(network Network) []string {
+func (f FlowJSON) AccountNamesSorted(network string) []string {
 	var sorted []string
 	for _, o := range EMULATOR_ADDRESS_ORDER {
 		for n, a := range f.Accounts {
@@ -122,13 +120,13 @@ func (f FlowJSON) AccountNamesSorted(network Network) []string {
 }
 
 // Get deployment by name
-func (f FlowJSON) GetDeployment(network Network) map[string][]string {
+func (f FlowJSON) GetDeployment(network string) map[string][]string {
 	deployment := f.Deployments[network]
 	return deployment
 }
 
 // Get deployment contracts by account name
-func (f FlowJSON) GetAccountDeployment(network Network, name string) []string {
+func (f FlowJSON) GetAccountDeployment(network string, name string) []string {
 	deployment := f.Deployments[network]
 	return deployment[name]
 }
