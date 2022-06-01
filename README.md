@@ -2,7 +2,7 @@
 
 Flow development in GO! Rapidly test your contracts in an embedded emulator, testnet, or mainnet.
 
-Influenced by https://github.com/bjartek/go-with-the-flow
+Influenced by https://github.com/bjartek/overflow
 
 ## Features
 
