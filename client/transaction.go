@@ -133,7 +133,12 @@ func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 		return nil, err
 	}
 
-	return crypto.NewInMemorySigner(pk, c.HashAlgo), nil
+	signer, err := crypto.NewInMemorySigner(pk, c.HashAlgo)
+	if err != nil {
+		return nil, err
+	}
+
+	return signer, nil
 }
 
 // Sign tx
