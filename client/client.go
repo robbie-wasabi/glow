@@ -233,6 +233,11 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 
 // Submit transactions to initialize accounts sourced from flow.json
 func (c *GlowClient) initAccounts() {
+	if len(c.FlowJSON.Accounts) == 0 {
+		c.Logger.Info("\nNO ACCOUNTS TO CREATE")
+		return
+	}
+
 	c.Logger.Info("\nCREATING ACCOUNTS:\n")
 	accounts := c.FlowJSON.AccountsSorted()
 	for i, a := range accounts {
@@ -254,6 +259,11 @@ func (c *GlowClient) initAccounts() {
 
 // Submit transactions to deploy contracts to existing accounts sourced from flow.json
 func (c *GlowClient) deployContracts() {
+	if len(c.FlowJSON.Contracts) == 0 {
+		c.Logger.Info("\nNO CONTRACTS TO DEPLOY")
+		return
+	}
+
 	c.Logger.Info("\nDEPLOYING CONTRACTS:\n")
 	acctNames := c.FlowJSON.AccountNamesSorted(c.network) // sorted list of account names
 	for _, a := range acctNames {
