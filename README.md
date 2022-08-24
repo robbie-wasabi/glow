@@ -166,3 +166,16 @@ Transaction and Script objects can be created easily with a client:
 
 Rather than throwing an error, the client will always panic when it discovers
 missing configuration such as transactions, scripts, contracts, flow.json, accounts, etc...
+
+The "log()" function in cadence does not print any output in the terminal...
+For now, "panic()" in scripts and txns to print desired log outputs.
+
+```js
+    // no output
+    log(message)
+
+    // output
+    if true {
+        panic(message)
+    }
+```
