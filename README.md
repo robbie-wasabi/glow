@@ -29,6 +29,21 @@ $ make init
 $ chmod 777 test.sh
 ```
 
+### ENV Vars
+
+In order to support multiple contexts in a single repo,
+
+```bash
+# export glow root for folder "example" in current directory (pwd)
+$ export GLOW_ROOT=`pwd`/example
+
+# export network as one of the following: embedded, emulator, testnet, mainnet (default: embedded)
+$ export GLOW_NETWORK=embedded
+
+# export log to specify verbosity level of client logger output (default: 3)
+$ export GLOW_LOG=3
+```
+
 ### Run Example Tests
 
 ```bash
@@ -46,21 +61,6 @@ $ export GLOW_ROOT=`pwd`/example
 $ go test ./example/test -run TransferFlow
 ```
 
-### ENV Vars
-
-In order to support multiple contexts in a single repo,
-
-```bash
-# export glow root for folder "example" in current directory (pwd)
-$ export GLOW_ROOT=`pwd`/example
-
-# export network as one of the following: embedded, emulator, testnet, mainnet (default: embedded)
-$ export GLOW_NETWORK=embedded
-
-# export log to specify verbosity level of client logger output (default: 3)
-$ export GLOW_LOG=3
-```
-
 ---
 
 ## Client
@@ -69,24 +69,25 @@ The Glow client is a configurable flow CLI wrapper that makes smart contract dev
 
 ### Initialization
 
-Glow sources the flow.json to create all relevant accounts, deploy all pertinent contracts and make its information available at runtime.
+Glow sources the flow.json to create all relevant accounts, deploy all pertinent contracts, and make its contents available at runtime.
 
 flow.json configuration info here: https://developers.flow.com/tools/flow-cli/configuration
 
 ```go
-    client := NewGlowClient().Start()
+  // init glow client
+  client := NewGlowClient().Start()
 
-    // get contract
-    contract := client.FlowJSON.GetContract(CONTRACT_NAME)
+  // get contract
+  contract := client.FlowJSON.GetContract(CONTRACT_NAME)
 
-    // get account(s)
-    account := client.FlowJSON.GetAccount(ACCOUNT_NAME)
-    account := client.FlowJSON.GetSvcAcct(NETWORK_NAME)
-    accounts := client.FlowJSON.GetAccounts(NETWORK_NAME)
+  // get account(s)
+  account := client.FlowJSON.GetAccount(ACCOUNT_NAME)
+  account := client.FlowJSON.GetSvcAcct(NETWORK_NAME)
+  accounts := client.FlowJSON.GetAccounts(NETWORK_NAME)
 
-    // get deployment
-    deployment := client.FlowJSON.GetDeployment(NETWORK_NAME)
-    deployments := client.FlowJSON.GetAccountDeployment(NETWORK_NAME, ACCOUNT_NAME)
+  // get deployment
+  deployment := client.FlowJSON.GetDeployment(NETWORK_NAME)
+  deployments := client.FlowJSON.GetAccountDeployment(NETWORK_NAME, ACCOUNT_NAME)
 ```
 
 ### Keys
@@ -157,11 +158,11 @@ Working with accounts:
 
 ---
 
-## Cadence
+### Cadence
 
 Glow has built in amenities to make development in cadence a bit simpler.
 
-### Imports
+#### Imports
 
 Contract imports are replaced at runtime. Glow supports two import strategies:
 
@@ -232,7 +233,7 @@ Transaction and Script objects can be created easily with a client:
     res, err = sc.NewSc(SC_BYTES, cadence.String("TEST")).Exec()
 ```
 
-## Signing Arbitrary Data
+### Signing Arbitrary Data
 
 ```go
     import (
