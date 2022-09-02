@@ -16,7 +16,7 @@ type Tx struct {
 	payer       Account
 	proposer    Account
 	authorizers []Account
-	client      *GlowClient // todo:
+	client      *GlowClient
 }
 
 // Unsigned transaction contructor.
@@ -141,8 +141,8 @@ func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 	return signer, nil
 }
 
-// Sign tx
-func (t *Tx) Sign() (*SignedTx, error) {
+// Sign tx with key at specified index
+func (t *Tx) SignWithKeyAtIndex(keyIndex int) (*SignedTx, error) {
 	// map to slice of crypto signers
 	var signers []crypto.Signer
 	for _, a := range t.authorizers {
@@ -164,7 +164,7 @@ func (t *Tx) Sign() (*SignedTx, error) {
 		t.proposer.FlowAddress(),
 		FlowAddressesFromAccounts(t.authorizers),
 		t.proposer.FlowAddress(),
-		0, // todo: which key?
+		keyIndex,
 		t.cdc,
 		"", // we don't need to pass the file name as we have a different strategy to replace imports
 		t.client.gasLimit,
@@ -198,6 +198,12 @@ func (t *Tx) Sign() (*SignedTx, error) {
 		flowTx: *flowTx.FlowTransaction(),
 		client: t.client,
 	}, err
+}
+
+// Sign tx with key at index 0
+func (t *Tx) Sign() (*SignedTx, error) {
+	defaultKeyIndex := 0
+	return t.SignWithKeyAtIndex(defaultKeyIndex)
 }
 
 // Send a signed Transaction

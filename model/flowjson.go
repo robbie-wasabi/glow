@@ -119,7 +119,7 @@ func (f FlowJSON) AccountNamesSorted(network string) []string {
 	return sorted
 }
 
-// Get deployment by name
+// Get deployment
 func (f FlowJSON) GetDeployment(network string) map[string][]string {
 	deployment := f.Deployments[network]
 	return deployment

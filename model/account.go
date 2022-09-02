@@ -53,6 +53,21 @@ func (a Account) CryptoPublicKey() crypto.PublicKey {
 	return a.CryptoPrivateKey().PublicKey()
 }
 
+// Sign Message
+func (a Account) SignMessage(data []byte, hashAlgo crypto.HashAlgorithm) ([]byte, error) {
+	signer, err := crypto.NewInMemorySigner(a.CryptoPrivateKey(), hashAlgo)
+	if err != nil {
+		return nil, err
+	}
+
+	signedData, err := flow.SignUserMessage(signer, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return signedData, nil
+}
+
 // Flow addresses
 func FlowAddressesFromAccounts(as []Account) []flow.Address {
 	var addrs []flow.Address

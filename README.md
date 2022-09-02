@@ -6,10 +6,10 @@ Influenced by https://github.com/bjartek/overflow
 
 ## Features
 
-1. Sources flow.json to automatically create accounts and deploy contracts.
-2. Embedded in memory emulator makes unit testing fast and easy.
-3. Create, sign, and submit transactions in a single line.
-4. Use "disposable" accounts to test your contracts on Testnet and Mainnet.
+1. Sources flow.json to automatically create accounts and deploy contracts on glow client initialization.
+2. Write unit tests to run against the flow testnet/mainnet or the embedded runtime emulator.
+3. Create "disposable" accounts to execute tests without any state cleanup.
+4. Create, sign, and send transactions in a single line of code.
 
 ---
 
@@ -29,19 +29,19 @@ $ make init
 $ chmod 777 test.sh
 ```
 
-### Test
+### Run Example Tests
 
 ```bash
-# run all tests (requires test.sh execute permissions)
+# run all tests (requires test.sh execute permissions, see "## Setup")
 $ make test
 
-# run all tests w/out test.sh permissions
+# - or you can run the tests without the test.sh script
 $ export GLOW_NETWORK=embedded # default
 $ export GLOW_ROOT=`pwd`/example
 $ go test ./example/test
 
-# run individual test
-$ export GLOW_NETWORK=embedded # default
+# - or individually
+$ export GLOW_NETWORK=embedded 
 $ export GLOW_ROOT=`pwd`/example
 $ go test ./example/test -run TransferFlow
 ```
@@ -65,33 +65,94 @@ $ export GLOW_LOG=3
 
 ## Client
 
-The Glow client is a configurable flow CLI wrapper.
+The Glow client is a configurable flow CLI wrapper that makes smart contract development simple and efficient.
 
 ### Initialization
 
+Glow sources the flow.json to create all relevant accounts, deploy all pertinent contracts and make its information available at runtime.
+
+flow.json configuration info here: https://developers.flow.com/tools/flow-cli/configuration
+
 ```go
     client := NewGlowClient().Start()
+
+    // get contract
+    contract := client.FlowJSON.GetContract(CONTRACT_NAME)
+
+    // get account(s)
+    account := client.FlowJSON.GetAccount(ACCOUNT_NAME)
+    account := client.FlowJSON.GetSvcAcct(NETWORK_NAME)
+    accounts := client.FlowJSON.GetAccounts(NETWORK_NAME)
+
+    // get deployment
+    deployment := client.FlowJSON.GetDeployment(NETWORK_NAME)
+    deployments := client.FlowJSON.GetAccountDeployment(NETWORK_NAME, ACCOUNT_NAME)
+```
+
+### Keys
+
+```go
+  client := NewGlowClient().Start() 
+
+  // create private key from seed phrase
+  cryptoPrivateKey, err := client.NewPrivateKey(SEED_PHRASE)
+
+  // create private key from string (0x prefix is optional)
+  cryptoPrivKeyFromString, err := client.NewPrivateKeyFromString(PRIV_KEY_STRING)
+
+  // create public key from string (0x prefix is optional)
+  cryptoPubKeyFromString, err := client.NewPublicKeyFromString(PRIV_KEY_STRING)
 ```
 
 ### Accounts
 
-Source accounts from flow.json
+Accounts in the flow.json are prefixed with the associated network:
+
+```json
+{
+  "accounts": {
+    "emulator-svc": {
+      "address": "0xf8d6e0586b0a20c7",
+      "key": "3a63ae4f8fffacd89d1b574d87fe448a0f848da7d0a45c04b60744b1c3905a14"
+    },
+    "emulator-account": {
+      "address": "01cf0e2f2f715450", // 0x prefix is not necessary
+      "key": "4a4f7a1d07b441135489823f1bcdc27ba607c1916b3b182a2b7ee91cf11eb5f6"
+    },
+    "testnet-svc": {
+      "address": "0xbc450f7d561b7bc1",
+      "key": "4d17ed74bef04b66e9c5ea299de7831a7815239188d45afe9e69a6b54dd966fd"
+    },
+  }
+}
+```
+
+Working with accounts:
 
 ```go
     client := NewGlowClient().Start()
 
     // get service account
-    svc := client.SvcAcct
+    svc = client.FlowJSON.GetAccount("svc")
+    // - or with shorthand
+    svc := client.SvcAcct 
 
-    // get account by name (network is inferred)
+    // get account by name.
+    // network is inferred so "emulator-account" should be written as "account"
     acct := client.FlowJSON.GetAccount("account")
 
     // create throw-away account
-    throwAway, err := client.CreateDisposableAccount() // creates an acct with a common seedphrase
+    throwAwayAcct, err := client.CreateDisposableAccount() // creates an acct with a common seedphrase
 
     // create a secure account
-    privKey, err := client.NewPrivateKey(SOME_SEED_PHRASE) // create a new crypto private key
+    privKey, err := client.NewPrivateKey(SEED_PHRASE) // create a new crypto private key
     secureAcct, err := client.CreateAccount(privKey)
+
+    // helpful functions
+    address := acct.Address
+    cadenceAddress := acct.CadenceAddress()
+    privateKey := acct.PrivKey
+    publicKey := acct.CryptoPrivateKey().PublicKey()
 ```
 
 ---
@@ -106,8 +167,14 @@ Contract imports are replaced at runtime. Glow supports two import strategies:
 
 i.e.
 
-1. import NonFungibleToken from 0xNonFungibleToken
-2. import NonFungibleToken from "./NonFungibleToken.cdc"
+```cadence
+    // preferable for syntax highlighting using the vscode extension 
+    // (https://developers.flow.com/tools/vscode-extension)
+    import NonFungibleToken from "./NonFungibleToken.cdc"
+
+    // this also works
+    import NonFungibleToken from 0xNonFungibleToken 
+```
 
 ### Txs and Scripts
 
@@ -119,13 +186,13 @@ Transaction and Script objects can be created easily with a client:
     proposer := client.FlowJSON.GetAccount("proposer")
 
     // bytes
-    tx := client.NewTx(SOME_TX_BYTES, proposer)
+    tx := client.NewTx(TX_BYTES, proposer)
 
     // from string
-    tx = client.NewTxFromString(SOME_TX_STRING, proposer)
+    tx = client.NewTxFromString(TX_STRING, proposer)
 
     // from file
-    tx = client.NewTxFromFile("./transaction/account_setup_royalty.cdc", proposer)
+    tx = client.NewTxFromFile(PATH_TO_TX, proposer)
 
     // add args
     tx = tx.Args(
@@ -138,28 +205,49 @@ Transaction and Script objects can be created easily with a client:
     // add authorizer
     tx, err := tx.AddAuthorizer(svc)
 
-    // sign
+    // sign with default key (key at index 0)
     signedTx, err := tx.Sign()
+
+    // sign with a key at specified index
+    signedTx, err := tx.SignWithKeyAtIndex(KEY_INDEX)
 
     // send
     res, err := signedTx.Send()
 
-    // sign and send
+    // sign with default key and send
     res, err = tx.SignAndSend()
 
-    // one liner
-    res, err = client.NewTx(SOME_TX_BYTES, proposer, cadence.String("TEST")).SignAndSend()
+    // tx one liner
+    res, err = client.NewTx(TX_BYTES, proposer, cadence.String("TEST")).SignAndSend()
 
     // same thing for scripts...
-    sc := client.NewSc(SOME_SC_BYTES)
-    sc = client.NewScFromString(SOME_SC_STRING)
+    sc := client.NewSc(SC_BYTES)
+    sc = client.NewScFromString(SC_STRING)
     sc = client.NewScFromFile("./script/nft_borrow.cdc")
 
     // exec
     res, err = sc.Exec()
 
-    // one liner
-    res, err = sc.NewSc(SOME_SC_BYTES, cadence.String("TEST")).Exec()
+    // script one liner
+    res, err = sc.NewSc(SC_BYTES, cadence.String("TEST")).Exec()
+```
+
+## Signing Arbitrary Data
+
+```go
+    import (
+        // ...
+        "github.com/onflow/flow-go-sdk/crypto"
+    )
+
+    client := NewGlowClient().Start()
+    signer := client.FlowJSON.GetAccount("account")
+
+    // sign data with hash algo
+    signedData, err := signer.SignMessage([]byte(DATA_STRING), HASH_ALGO)
+
+    // example: sign data with SHA3_256 hash algo
+    signedDataSHA3256, err := signer.SignMessage([]byte("some_message"), crypto.SHA3_256)
 ```
 
 ## Caveats
@@ -168,7 +256,7 @@ Rather than throwing an error, the client will always panic when it discovers
 missing configuration such as transactions, scripts, contracts, flow.json, accounts, etc...
 
 The "log()" function in cadence does not print any output in the terminal...
-For now, "panic()" in scripts and txns to print desired log outputs.
+This is obviously not ideal but use "panic()" in scripts and txns to print desired log outputs.
 
 ```js
     // no output

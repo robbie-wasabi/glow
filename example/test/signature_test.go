@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/onflow/cadence"
-	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	. "github.com/rrossilli/glow/client"
 	. "github.com/rrossilli/glow/util"
@@ -24,15 +23,11 @@ func TestSignData(t *testing.T) {
 		svc := client.SvcAcct
 
 		Convey("Sign data", func() {
-			// create crypto signer
-			signer, err := crypto.NewInMemorySigner(svc.CryptoPrivateKey(), crypto.SHA3_256)
-			So(err, ShouldBeNil)
-
 			// sign data
 			data := "test"
-			signedData, err := flow.SignUserMessage(signer, []byte(data))
+			signedData, err := svc.SignMessage([]byte(data), crypto.SHA3_256)
 
-			// verify signed data in cadence
+			// verify signed data on chain
 			res, err := client.NewScFromFile(
 				ScPath("sig_verify"),
 				cadence.String(RemoveHexPrefix(svc.CryptoPublicKey().String())),

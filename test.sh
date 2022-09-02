@@ -4,6 +4,6 @@ export GLOW_NETWORK=embedded
 export GLOW_LOG=3
 
 # tests
-# go test ./example/test -run TestTransferFlow -v 3
-# go test ./example/test -run TestMintNFT -v 3
+go test ./example/test -run TestTransferFlow -v 3
+go test ./example/test -run TestMintNFT -v 3
 go test ./example/test -run TestSignData -v 3
