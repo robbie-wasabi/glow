@@ -127,8 +127,8 @@ type SignedTx struct {
 }
 
 // Create new crypto signer
-func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
-	pk, err := c.NewPrivateKeyFromHex(privKey)
+func (c *GlowClient) newInMemorySigner(privKeyString string) (crypto.Signer, error) {
+	pk, err := c.NewPrivateKeyFromString(privKeyString)
 	if err != nil {
 		return nil, err
 	}
