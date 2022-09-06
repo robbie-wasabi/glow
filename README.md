@@ -1,6 +1,8 @@
 # Glow
 
-Flow development in GO! Rapidly test your contracts in an embedded emulator, testnet, or mainnet.
+Flow development in Golang! A library to test your contracts/txns/scripts on mainnet, testnet or the embedded emulator.
+
+As of now, this package is the passion-project of a single developer; it was created out of necessity and without external funding. Hopefully you find it useful!
 
 Influenced by https://github.com/bjartek/overflow
 
@@ -253,8 +255,14 @@ Transaction and Script objects can be created easily with a client:
 
 ## Caveats
 
+Important notes while working with Glow - many of which are subject to change in the future.
+
+### Configuration Error Handling
+
 Rather than throwing an error, the client will always panic when it discovers
 missing configuration such as transactions, scripts, contracts, flow.json, accounts, etc...
+
+### Logging
 
 The "log()" function in cadence does not print any output in the terminal...
 This is obviously not ideal but use "panic()" in scripts and txns to print desired log outputs.
@@ -267,4 +275,34 @@ This is obviously not ideal but use "panic()" in scripts and txns to print desir
     if true {
         panic(message)
     }
+```
+
+### Accounts
+
+It is important to note that in the flow emulator, account addresses are predetermined and not randomly generated on account creation. Therefore,
+it is necessary to define each account in the flow.json with its respected address based on the order that it is listed in /consts/consts.go.
+
+```js
+    "0xf8d6e0586b0a20c7",
+		"0x01cf0e2f2f715450",
+		"0x179b6b1cb6755e31",
+    // and so on...
+```
+
+so the first three accounts should be:
+
+```json
+  "emulator-svc": {
+    "address": "0xf8d6e0586b0a20c7",
+    "key": "<service_account_key>"
+  },
+  "emulator-acct-1": {
+    "address": "0x01cf0e2f2f715450",
+    "key": "<some_key>"
+  },
+  "emulator-acct-2": {
+    "address": "0x179b6b1cb6755e31",
+    "key": "<some_key>"
+  },
+  // etc...
 ```
