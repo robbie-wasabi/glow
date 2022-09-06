@@ -71,15 +71,30 @@ func (b *GlowClientBuilder) SigAlgorithm(algo string) *GlowClientBuilder {
 	return b
 }
 
-func (b *GlowClientBuilder) LogLevel(level int) *GlowClientBuilder {
-	b.LogLvl = level
-	return b
-}
-
 func (b *GlowClientBuilder) GasLimit(limit uint64) *GlowClientBuilder {
 	b.GasLim = limit
 	return b
 }
+
+// todo:
+// func (b *GlowClientBuilder) LogLevel(level int) *GlowClientBuilder {
+// 	b.LogLvl = level
+// 	return b
+// }
+
+// todo:
+// func (b *GlowClientBuilder) RootPath(root string) *GlowClientBuilder {
+// 	b.Root = root
+// 	return b
+// }
+
+// todo:
+// // specify flow network as it appears in specified flow.json.
+// // typically mainnet, testnet, env, embedded
+// func (b *GlowClientBuilder) NetworkName(network string) *GlowClientBuilder {
+// 	b.Network = network
+// 	return b
+// }
 
 func NewGlowClientBuilder(network, root string, logLvl int) *GlowClientBuilder {
 	if network == "" {

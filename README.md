@@ -31,8 +31,6 @@ $ chmod 777 test.sh
 
 ### ENV Vars
 
-In order to support multiple contexts in a single repo,
-
 ```bash
 # export glow root for folder "example" in current directory (pwd)
 $ export GLOW_ROOT=`pwd`/example
@@ -43,6 +41,8 @@ $ export GLOW_NETWORK=embedded
 # export log to specify verbosity level of client logger output (default: 3)
 $ export GLOW_LOG=3
 ```
+
+Quick Tip: bash scripts like ./test.sh are useful in order to run a group of tests with a specified configuration.
 
 ### Run Example Tests
 
