@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/onflow/cadence"
+	"github.com/onflow/flow-cli/pkg/flowkit"
+	"github.com/onflow/flow-cli/pkg/flowkit/services"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 
@@ -11,12 +13,11 @@ import (
 )
 
 type Tx struct {
-	cdc         []byte
-	args        []cadence.Value
+	script      flowkit.Script // TODO: flowkit's "script" type can be quite confusing since "script" is typically used to refer to reads from the chain
 	payer       Account
 	proposer    Account
 	authorizers []Account
-	client      *GlowClient
+	client      *GlowClient // todo:
 }
 
 // Unsigned transaction contructor.
@@ -28,8 +29,7 @@ func (c *GlowClient) NewTx(
 ) *Tx {
 	b := []byte(c.replaceImportAddresses(string(cdc)))
 	return &Tx{
-		cdc:      b,
-		args:     args,
+		script:   *flowkit.NewScript(b, args, ""),
 		proposer: proposer,
 		payer:    proposer,
 		authorizers: []Account{
@@ -48,8 +48,7 @@ func (c *GlowClient) NewTxFromString(
 ) *Tx {
 	b := []byte(c.replaceImportAddresses(cdc))
 	return &Tx{
-		cdc:      b,
-		args:     args,
+		script:   *flowkit.NewScript(b, args, ""),
 		proposer: proposer,
 		payer:    proposer,
 		authorizers: []Account{
@@ -72,8 +71,7 @@ func (c *GlowClient) NewTxFromFile(
 	}
 
 	return &Tx{
-		cdc:      []byte(cdc),
-		args:     args,
+		script:   *flowkit.NewScript([]byte(cdc), args, ""),
 		proposer: proposer,
 		payer:    proposer,
 		authorizers: []Account{
@@ -85,13 +83,13 @@ func (c *GlowClient) NewTxFromFile(
 
 // Specify args
 func (t *Tx) Args(args ...cadence.Value) *Tx {
-	t.args = args
+	t.script.Args = args
 	return t
 }
 
 // Add arg to args
 func (t *Tx) AddArg(arg cadence.Value) *Tx {
-	t.args = append(t.args, arg)
+	t.script.Args = append(t.script.Args, arg)
 	return t
 }
 
@@ -122,13 +120,13 @@ func (t *Tx) AddAuthorizer(a Account) *Tx {
 }
 
 type SignedTx struct {
-	flowTx flow.Transaction
+	flowTx *flowkit.Transaction
 	client *GlowClient
 }
 
 // Create new crypto signer
-func (c *GlowClient) newInMemorySigner(privKeyString string) (crypto.Signer, error) {
-	pk, err := c.NewPrivateKeyFromString(privKeyString)
+func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
+	pk, err := c.NewPrivateKeyFromHex(privKey)
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +139,8 @@ func (c *GlowClient) newInMemorySigner(privKeyString string) (crypto.Signer, err
 	return signer, nil
 }
 
-// Sign tx with key at specified index
-func (t *Tx) SignWithKeyAtIndex(keyIndex int) (*SignedTx, error) {
+// Sign tx
+func (t *Tx) Sign() (*SignedTx, error) {
 	// map to slice of crypto signers
 	var signers []crypto.Signer
 	for _, a := range t.authorizers {
@@ -159,18 +157,19 @@ func (t *Tx) SignWithKeyAtIndex(keyIndex int) (*SignedTx, error) {
 		addresses = append(addresses, a.FlowAddress())
 	}
 
+	var txAddresses = services.NewTransactionAddresses(
+		t.proposer.FlowAddress(),
+		t.payer.FlowAddress(),
+		FlowAddressesFromAccounts(t.authorizers),
+	)
+
 	// build flow tx
 	flowTx, err := t.client.Services.Transactions.Build(
-		t.proposer.FlowAddress(),
-		FlowAddressesFromAccounts(t.authorizers),
-		t.proposer.FlowAddress(),
-		keyIndex,
-		t.cdc,
-		"", // we don't need to pass the file name as we have a different strategy to replace imports
+		txAddresses,
+		0, // todo: which key?
+		&t.script,
 		t.client.gasLimit,
-		t.args,
 		t.client.network,
-		true,
 	)
 	if err != nil {
 		return nil, err
@@ -195,21 +194,14 @@ func (t *Tx) SignWithKeyAtIndex(keyIndex int) (*SignedTx, error) {
 	}
 
 	return &SignedTx{
-		flowTx: *flowTx.FlowTransaction(),
+		flowTx: flowTx,
 		client: t.client,
 	}, err
 }
 
-// Sign tx with key at index 0
-func (t *Tx) Sign() (*SignedTx, error) {
-	defaultKeyIndex := 0
-	return t.SignWithKeyAtIndex(defaultKeyIndex)
-}
-
 // Send a signed Transaction
 func (signedTx *SignedTx) Send() (*flow.TransactionResult, error) {
-	txBytes := []byte(fmt.Sprintf("%x", signedTx.flowTx.Encode()))
-	_, res, err := signedTx.client.Services.Transactions.SendSigned(txBytes, true)
+	_, res, err := signedTx.client.Services.Transactions.SendSigned(signedTx.flowTx)
 	if err != nil {
 		return nil, err
 	}

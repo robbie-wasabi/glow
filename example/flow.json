@@ -40,6 +40,12 @@
         "emulator": "0xf8d6e0586b0a20c7"
       }
     },
+    "ViewResolver": {
+      "source": "./contract/ViewResolver.cdc",
+      "aliases": {
+        "emulator": "0xf8d6e0586b0a20c7"
+      }
+    },
     "ExampleNFT": {
       "source": "./contract/ExampleNFT.cdc",
       "aliases": {
@@ -57,10 +63,6 @@
       "address": "f8d6e0586b0a20c7",
       "key": "3a63ae4f8fffacd89d1b574d87fe448a0f848da7d0a45c04b60744b1c3905a14"
     },
-    "testnet-svc": {
-      "address": "bc450f7d561b7bc1",
-      "key": "4d17ed74bef04b66e9c5ea299de7831a7815239188d45afe9e69a6b54dd966fd"
-    },
     "emulator-test": {
       "address": "0x01cf0e2f2f715450",
       "key": "4a4f7a1d07b441135489823f1bcdc27ba607c1916b3b182a2b7ee91cf11eb5f6"
@@ -72,6 +74,7 @@
         "NonFungibleToken",
         "NFTStorefront",
         "MetadataViews",
+        "ViewResolver",
         "ExampleNFT"
       ]
     }
