@@ -13,7 +13,7 @@ import (
 // Get Account helper function
 func (c *GlowClient) GetAccount(addr string) (*flow.Account, error) {
 	a := flow.HexToAddress(addr)
-	acct, err := c.Services.Accounts.Get(a)
+	acct, err := c.FlowKit.GetAccount(nil, a)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (c *GlowClient) CreateDisposableAccount() (*Account, error) {
 func (c *GlowClient) CreateAccount(
 	privKey crypto.PrivateKey,
 ) (*Account, error) {
-	svcAcct := c.FlowJSON.GetSvcAcct(c.network)
+	svcAcct := c.FlowJSON.GetSvcAcct(c.network.Name)
 	txRes, err := c.NewTx(
 		[]byte(TX_CREATE_ACCOUNT),
 		svcAcct,

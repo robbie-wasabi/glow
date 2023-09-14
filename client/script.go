@@ -1,23 +1,24 @@
 package client
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/onflow/cadence"
 	"github.com/onflow/flow-cli/flowkit"
-	"github.com/onflow/flow-cli/pkg/flowkit/util"
 	"github.com/onflow/flow-go-sdk"
 )
 
+// Sc struct encapsulates Flow script execution logic.
 type Sc struct {
+	ctx    context.Context
 	script *flowkit.Script
 	client *GlowClient
 }
 
-// Create new script
-func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
-	b := []byte(c.replaceImportAddresses(string(bytes)))
-
+// newSc is a utility function to create a script, private to ensure a single point of instantiation.
+func (c *GlowClient) newSc(content string, args ...cadence.Value) *Sc {
+	b := []byte(c.replaceImportAddresses(content))
 	return &Sc{
 		script: &flowkit.Script{
 			Code: b,
@@ -27,61 +28,54 @@ func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
 	}
 }
 
-// Create new script from string
-func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) *Sc {
-	b := []byte(c.replaceImportAddresses(cdc))
-	return &Sc{
-		script: flowkit.NewScript(b, args, ""),
-		client: c,
-	}
+// NewSc creates a new script from a byte array.
+func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
+	return c.newSc(string(bytes), args...)
 }
 
-// Create new script from file
-func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) *Sc {
+// NewScFromString creates a new script from a string.
+func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) *Sc {
+	return c.newSc(cdc, args...)
+}
+
+// NewScFromFile creates a new script from a file.
+func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) (*Sc, error) {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
-		panic(fmt.Sprintf("sc not found at: %s", file))
+		return nil, fmt.Errorf("sc not found at: %s", file)
 	}
-	b := []byte(c.replaceImportAddresses(cdc))
-	return &Sc{
-		script: flowkit.NewScript(b, args, ""),
-		client: c,
-	}
+	return c.newSc(cdc, args...), nil
 }
 
-// Specify args
+// WithContext adds context to a script.
+func (s *Sc) WithContext(ctx context.Context) *Sc {
+	s.ctx = ctx
+	return s
+}
+
+// Args sets the arguments for the script.
 func (sc *Sc) Args(args ...cadence.Value) *Sc {
 	sc.script.Args = args
 	return sc
 }
 
-// Add arg to args
+// AddArg appends a single argument to the script.
 func (sc *Sc) AddArg(arg cadence.Value) *Sc {
 	sc.script.Args = append(sc.script.Args, arg)
 	return sc
 }
 
-// Execute script
+// Exec executes the script at the latest block.
 func (sc *Sc) Exec() (cadence.Value, error) {
-	// necessary or throws null pointer exception
-	query := util.ScriptQuery{
+	query := flowkit.ScriptQuery{
+		Latest: true,
 		ID:     flow.EmptyID,
 		Height: 0,
 	}
-	result, err := sc.client.Services.Scripts.Execute(sc.script, sc.client.network, &query)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return sc.client.FlowKit.ExecuteScript(sc.ctx, *sc.script, query)
 }
 
-// Execute script with query
-func (sc *Sc) ExecWithQuery(query *util.ScriptQuery) (cadence.Value, error) {
-	result, err := sc.client.Services.Scripts.Execute(sc.script, sc.client.network, query)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+// ExecWithQuery executes the script using a specific query.
+func (sc *Sc) ExecWithQuery(query *flowkit.ScriptQuery) (cadence.Value, error) {
+	return sc.client.FlowKit.ExecuteScript(sc.ctx, *sc.script, *query)
 }

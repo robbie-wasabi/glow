@@ -565,8 +565,6 @@ github.com/onflow/cadence v0.40.0 h1:3pTdkyVTjMx2U5+YZYvIpyw74CSxabjk9PdAZUkJ1GU
 github.com/onflow/cadence v0.40.0/go.mod h1:OIJLyVBPa339DCBQXBfGaorT4tBjQh9gSKe+ZAIyyh0=
 github.com/onflow/flow-cli/flowkit v1.4.0 h1:GV/B55a2g+Dy+PBCMx4uEtdmMx7qyVbx7x3hgzdZRaU=
 github.com/onflow/flow-cli/flowkit v1.4.0/go.mod h1:AQWWUCq3UDXIEI1dG2MADyHi5ZeGE5pIvS5Fh0k/ITU=
-github.com/onflow/flow-cli/pkg/flowkit v0.0.0-20230424145811-a3dd1855ceea h1:1XkjPePpZA+W2KwNYiIgQOgEGwM/V4C1UbP6IDJiNDE=
-github.com/onflow/flow-cli/pkg/flowkit v0.0.0-20230424145811-a3dd1855ceea/go.mod h1:wuxnY3lmjoKk4N4oi43l7Y5Edhnu8Yafyqy24Q9YNmw=
 github.com/onflow/flow-core-contracts/lib/go/contracts v1.2.4-0.20230703193002-53362441b57d h1:B7PdhdUNkve5MVrekWDuQf84XsGBxNZ/D3x+QQ8XeVs=
 github.com/onflow/flow-core-contracts/lib/go/contracts v1.2.4-0.20230703193002-53362441b57d/go.mod h1:xAiV/7TKhw863r6iO3CS5RnQ4F+pBY1TxD272BsILlo=
 github.com/onflow/flow-core-contracts/lib/go/templates v1.2.3 h1:X25A1dNajNUtE+KoV76wQ6BR6qI7G65vuuRXxDDqX7E=
@@ -670,6 +668,7 @@ github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeV
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=
+github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/slok/go-http-metrics v0.10.0 h1:rh0LaYEKza5eaYRGDXujKrOln57nHBi4TtVhmNEpbgM=
 github.com/slok/go-http-metrics v0.10.0/go.mod h1:lFqdaS4kWMfUKCSukjC47PdCeTk+hXDUVm8kLHRqJ38=
 github.com/smartystreets/assertions v1.2.0 h1:42S6lae5dvLc7BrLu/0ugRtcFVjoJNMC/N3yZFZkDFs=
@@ -1019,6 +1018,7 @@ golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20210917161153-d61c044b1678/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220908164124-27713097b956/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

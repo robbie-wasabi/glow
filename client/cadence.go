@@ -2,7 +2,7 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -12,7 +12,7 @@ import (
 // Retrieve cadence from file and replace imports with addresses from specified flow.json
 func (c *GlowClient) CadenceFromFile(file string) (string, error) {
 	p := path.Join(c.root, file)
-	cdc, err := ioutil.ReadFile(p)
+	cdc, err := os.ReadFile(p)
 	if err != nil {
 		return "", err
 	}
@@ -37,7 +37,7 @@ func (c *GlowClient) replaceImportAddresses(cdc string) string {
 		newCdc = strings.Replace(
 			newCdc,
 			PrependHexPrefix(key),
-			co.Address(c.network),
+			co.Address(c.network.Name),
 			-1,
 		)
 	}

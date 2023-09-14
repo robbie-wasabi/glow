@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -17,16 +16,16 @@ import (
 	"github.com/onflow/flow-cli/flowkit/output"
 	"github.com/onflow/flow-emulator/emulator"
 
-	// "github.com/onflow/flow-cli/flowkit/services"
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/spf13/afero"
 
 	"github.com/rs/zerolog"
-	// . "github.com/rrossilli/glow/util"
 
 	. "github.com/rrossilli/glow/model"
 	. "github.com/rrossilli/glow/tmp"
 )
+
+// TODO: specify which contracts to deploy
 
 const (
 	ECDSA_P256 = "ECDSA_P256"
@@ -64,8 +63,6 @@ func (b *GlowClientBuilder) DeployContracts(l bool) *GlowClientBuilder {
 	b.DepContracts = l
 	return b
 }
-
-// todo: specify which contracts to deploy
 
 func (b *GlowClientBuilder) HashAlgorithm(algo string) *GlowClientBuilder {
 	b.HashAlgo = crypto.StringToHashAlgorithm(algo)
@@ -124,7 +121,6 @@ type GlowClient struct {
 	FlowJSON FlowJSON
 	Logger   output.Logger
 	FlowKit  *flowkit.Flowkit
-	// Services *services.Services
 	State    *flowkit.State
 	HashAlgo crypto.HashAlgorithm
 	SigAlgo  crypto.SignatureAlgorithm
@@ -164,7 +160,7 @@ func parseFlowJSON(file string) (flowJSON FlowJSON) {
 		panic(err)
 	}
 	defer jsonFile.Close()
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(jsonFile)
 	if err != nil {
 		panic(err)
 	}
@@ -239,7 +235,6 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		FlowJSON: flowJSON,
 		Logger:   logger,
 		FlowKit:  fk,
-		// Services: service,
 		State:    state,
 		HashAlgo: b.HashAlgo,
 		SigAlgo:  b.SigAlgo,
