@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/onflow/cadence"
-	"github.com/onflow/flow-cli/pkg/flowkit"
-	"github.com/onflow/flow-cli/pkg/flowkit/services"
+	"github.com/onflow/flow-cli/flowkit"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 
@@ -141,6 +140,7 @@ func (c *GlowClient) newInMemorySigner(privKey string) (crypto.Signer, error) {
 
 // Sign tx
 func (t *Tx) Sign() (*SignedTx, error) {
+
 	// map to slice of crypto signers
 	var signers []crypto.Signer
 	for _, a := range t.authorizers {
@@ -157,59 +157,62 @@ func (t *Tx) Sign() (*SignedTx, error) {
 		addresses = append(addresses, a.FlowAddress())
 	}
 
-	var txAddresses = services.NewTransactionAddresses(
-		t.proposer.FlowAddress(),
-		t.payer.FlowAddress(),
-		FlowAddressesFromAccounts(t.authorizers),
-	)
+	// var txAddresses = services.NewTransactionAddresses(
+	// 	t.proposer.FlowAddress(),
+	// 	t.payer.FlowAddress(),
+	// 	FlowAddressesFromAccounts(t.authorizers),
+	// )
 
-	// build flow tx
-	flowTx, err := t.client.Services.Transactions.Build(
-		txAddresses,
-		0, // todo: which key?
-		&t.script,
-		t.client.gasLimit,
-		t.client.network,
-	)
-	if err != nil {
-		return nil, err
-	}
+	// // build flow tx
+	// flowTx, err := t.client.Services.Transactions.Build(
+	// 	txAddresses,
+	// 	0, // todo: which key?
+	// 	&t.script,
+	// 	t.client.gasLimit,
+	// 	t.client.network,
+	// )
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	// sign transaction with each signer
-	for i := len(addresses) - 1; i >= 0; i-- {
-		signerAddress := addresses[i]
-		signer := signers[i]
+	// // sign transaction with each signer
+	// for i := len(addresses) - 1; i >= 0; i-- {
+	// 	signerAddress := addresses[i]
+	// 	signer := signers[i]
 
-		if i == 0 {
-			err := flowTx.FlowTransaction().SignEnvelope(signerAddress, 0, signer)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			err := flowTx.FlowTransaction().SignPayload(signerAddress, 0, signer)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
+	// 	if i == 0 {
+	// 		err := flowTx.FlowTransaction().SignEnvelope(signerAddress, 0, signer)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 	} else {
+	// 		err := flowTx.FlowTransaction().SignPayload(signerAddress, 0, signer)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 	}
+	// }
 
-	return &SignedTx{
-		flowTx: flowTx,
-		client: t.client,
-	}, err
+	// return &SignedTx{
+	// 	flowTx: flowTx,
+	// 	client: t.client,
+	// }, err
+
+	return nil, nil
 }
 
 // Send a signed Transaction
 func (signedTx *SignedTx) Send() (*flow.TransactionResult, error) {
-	_, res, err := signedTx.client.Services.Transactions.SendSigned(signedTx.flowTx)
-	if err != nil {
-		return nil, err
-	}
-	if res.Error != nil {
-		return nil, res.Error
-	}
+	// _, res, err := signedTx.client.Services.Transactions.SendSigned(signedTx.flowTx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// if res.Error != nil {
+	// 	return nil, res.Error
+	// }
 
-	return res, nil
+	// return res, nil
+	return nil, nil
 }
 
 // Sign and send a transaction

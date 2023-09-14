@@ -9,10 +9,11 @@ import (
 	"strconv"
 
 	"github.com/onflow/cadence"
-	"github.com/onflow/flow-cli/pkg/flowkit"
-	"github.com/onflow/flow-cli/pkg/flowkit/gateway"
-	"github.com/onflow/flow-cli/pkg/flowkit/output"
-	"github.com/onflow/flow-cli/pkg/flowkit/services"
+	"github.com/onflow/flow-cli/flowkit"
+	"github.com/onflow/flow-cli/flowkit/gateway"
+	"github.com/onflow/flow-cli/flowkit/output"
+
+	// "github.com/onflow/flow-cli/flowkit/services"
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/spf13/afero"
 
@@ -117,7 +118,8 @@ type GlowClient struct {
 	root     string
 	FlowJSON FlowJSON
 	Logger   output.Logger
-	Services *services.Services
+	FlowKit  *flowkit.Flowkit
+	// Services *services.Services
 	State    *flowkit.State
 	HashAlgo crypto.HashAlgorithm
 	SigAlgo  crypto.SignatureAlgorithm
@@ -185,11 +187,12 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 	logger.Info(fmt.Sprintf("IN MEMORY: %v", b.InMemory))
 	logger.Info(fmt.Sprintf("ROOT: %v", b.Root))
 
-	var service *services.Services
+	var fk *flowkit.Flowkit
 	if b.InMemory {
 		svcAcct, _ := state.EmulatorServiceAccount()
 		gw := gateway.NewEmulatorGateway(svcAcct)
-		service = services.NewServices(gw, state, logger)
+		fk = flowkit.NewFlowkit(gw, state, logger)
+		// service = services.NewServices(gw, state, logger)
 	} else {
 		network, err := state.Networks().ByName(b.Network)
 		if err != nil {
@@ -200,7 +203,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		if err != nil {
 			panic(err)
 		}
-		service = services.NewServices(gw, state, logger)
+		fk = flowkit.NewFlowkit(gw, state, logger)
 	}
 
 	svcAcct := flowJSON.GetSvcAcct(b.Network)
@@ -210,7 +213,8 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		root:     b.Root,
 		FlowJSON: flowJSON,
 		Logger:   logger,
-		Services: service,
+		FlowKit:  fk,
+		// Services: service,
 		State:    state,
 		HashAlgo: b.HashAlgo,
 		SigAlgo:  b.SigAlgo,

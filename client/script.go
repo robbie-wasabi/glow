@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/onflow/cadence"
-	"github.com/onflow/flow-cli/pkg/flowkit"
+	"github.com/onflow/flow-cli/flowkit"
 	"github.com/onflow/flow-cli/pkg/flowkit/util"
 	"github.com/onflow/flow-go-sdk"
 )
@@ -17,8 +17,12 @@ type Sc struct {
 // Create new script
 func (c *GlowClient) NewSc(bytes []byte, args ...cadence.Value) *Sc {
 	b := []byte(c.replaceImportAddresses(string(bytes)))
+
 	return &Sc{
-		script: flowkit.NewScript(b, args, ""),
+		script: &flowkit.Script{
+			Code: b,
+			Args: args,
+		},
 		client: c,
 	}
 }
