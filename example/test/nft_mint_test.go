@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/onflow/cadence"
+	"github.com/onflow/cadence/runtime/common"
 	. "github.com/rrossilli/glow/client"
 	. "github.com/rrossilli/glow/util"
 
@@ -24,7 +25,7 @@ func TestMintNFT(t *testing.T) {
 				TxPath("account_setup_royalty"),
 				minter,
 				cadence.Path{
-					Domain:     "storage",
+					Domain:     common.PathDomainStorage,
 					Identifier: "flowTokenVault",
 				},
 			).SignAndSend()

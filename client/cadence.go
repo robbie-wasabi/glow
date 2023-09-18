@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	. "github.com/rrossilli/glow/util"
+	"github.com/rrossilli/glow/util"
 )
 
 // Retrieve cadence from file and replace imports with addresses from specified flow.json
@@ -36,7 +36,7 @@ func (c *GlowClient) replaceImportAddresses(cdc string) string {
 		co := c.FlowJSON.Contracts[key]
 		newCdc = strings.Replace(
 			newCdc,
-			PrependHexPrefix(key),
+			util.PrependHexPrefix(key),
 			co.Address(c.network.Name),
 			-1,
 		)

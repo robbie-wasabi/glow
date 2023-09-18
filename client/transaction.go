@@ -10,23 +10,23 @@ import (
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 
-	. "github.com/rrossilli/glow/model"
+	"github.com/rrossilli/glow/model"
 )
 
 // Tx struct encapsulates the logic to build, sign and send Flow transactions.
 type Tx struct {
 	ctx         context.Context
 	script      flowkit.Script // FlowKit's "script" type handles reads from the chain.
-	payer       Account
-	proposer    Account
-	authorizers []Account
+	payer       model.Account
+	proposer    model.Account
+	authorizers []model.Account
 	client      *GlowClient
 }
 
 // newTx is a private helper to deduplicate logic in public constructors.
 func (c *GlowClient) newTx(
 	code []byte,
-	proposer Account,
+	proposer model.Account,
 	args ...cadence.Value,
 ) *Tx {
 	return &Tx{
@@ -36,7 +36,7 @@ func (c *GlowClient) newTx(
 		},
 		proposer: proposer,
 		payer:    proposer,
-		authorizers: []Account{
+		authorizers: []model.Account{
 			proposer,
 		},
 		client: c,
@@ -47,7 +47,7 @@ func (c *GlowClient) newTx(
 // Assumes proposer is also the gas payer and sole authorizer.
 func (c *GlowClient) NewTx(
 	cdc []byte,
-	proposer Account,
+	proposer model.Account,
 	args ...cadence.Value,
 ) *Tx {
 	return c.newTx(cdc, proposer, args...)
@@ -57,7 +57,7 @@ func (c *GlowClient) NewTx(
 // Assumes proposer is also the gas payer and sole authorizer.
 func (c *GlowClient) NewTxFromString(
 	cdc string,
-	proposer Account,
+	proposer model.Account,
 	args ...cadence.Value,
 ) *Tx {
 	return c.newTx([]byte(c.replaceImportAddresses(cdc)), proposer, args...)
@@ -67,14 +67,14 @@ func (c *GlowClient) NewTxFromString(
 // Assumes proposer is also the gas payer and sole authorizer.
 func (c *GlowClient) NewTxFromFile(
 	file string,
-	proposer Account,
+	proposer model.Account,
 	args ...cadence.Value,
-) (*Tx, error) {
+) *Tx {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("tx not found at: %s", file)
+		panic(fmt.Sprintf("Transaction not found at: %s", file))
 	}
-	return c.newTx([]byte(cdc), proposer, args...), nil
+	return c.newTx([]byte(cdc), proposer, args...)
 }
 
 // WithContext adds context to a transaction.
@@ -96,27 +96,27 @@ func (t *Tx) AddArg(arg cadence.Value) *Tx {
 }
 
 // Payer specifies who pays for the transaction.
-func (t *Tx) Payer(p Account) *Tx {
+func (t *Tx) Payer(p model.Account) *Tx {
 	t.payer = p
 	t.authorizers = append(t.authorizers, p)
 	return t
 }
 
 // Proposer specifies who proposes the transaction.
-func (t *Tx) Proposer(p Account) *Tx {
+func (t *Tx) Proposer(p model.Account) *Tx {
 	t.proposer = p
 	t.authorizers = append(t.authorizers, p)
 	return t
 }
 
 // Authorizers sets the authorizers of the transaction.
-func (t *Tx) Authorizers(a ...Account) *Tx {
+func (t *Tx) Authorizers(a ...model.Account) *Tx {
 	t.authorizers = a
 	return t
 }
 
 // AddAuthorizer appends an authorizer to the transaction.
-func (t *Tx) AddAuthorizer(a Account) *Tx {
+func (t *Tx) AddAuthorizer(a model.Account) *Tx {
 	t.authorizers = append(t.authorizers, a)
 	return t
 }
@@ -164,7 +164,7 @@ func (t *Tx) Sign() (*SignedTx, error) {
 	var txAddresses = transactions.AddressesRoles{
 		Proposer:    t.proposer.FlowAddress(),
 		Payer:       t.payer.FlowAddress(),
-		Authorizers: FlowAddressesFromAccounts(t.authorizers),
+		Authorizers: model.FlowAddressesFromAccounts(t.authorizers),
 	}
 
 	flowTx, err := t.client.FlowKit.BuildTransaction(t.ctx,

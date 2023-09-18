@@ -1,9 +1,9 @@
 package client
 
 import (
-	. "github.com/rrossilli/glow/model"
-	. "github.com/rrossilli/glow/tmp"
-	. "github.com/rrossilli/glow/util"
+	"github.com/rrossilli/glow/model"
+	"github.com/rrossilli/glow/tmp"
+	"github.com/rrossilli/glow/util"
 
 	"github.com/onflow/cadence"
 	"github.com/onflow/flow-go-sdk"
@@ -23,7 +23,7 @@ func (c *GlowClient) GetAccount(addr string) (*flow.Account, error) {
 
 // Create a new account on chain with a generic/unsafe seed phrase.
 // These accounts are considered disposable as they have unsafe keys
-func (c *GlowClient) CreateDisposableAccount() (*Account, error) {
+func (c *GlowClient) CreateDisposableAccount() (*model.Account, error) {
 	privKey, err := c.NewPrivateKey(DEFAULT_KEYS_SEED_PHRASE)
 	if err != nil {
 		return nil, err
@@ -40,12 +40,12 @@ func (c *GlowClient) CreateDisposableAccount() (*Account, error) {
 // Create a new account on chain
 func (c *GlowClient) CreateAccount(
 	privKey crypto.PrivateKey,
-) (*Account, error) {
+) (*model.Account, error) {
 	svcAcct := c.FlowJSON.GetSvcAcct(c.network.Name)
 	txRes, err := c.NewTx(
-		[]byte(TX_CREATE_ACCOUNT),
+		[]byte(tmp.TX_CREATE_ACCOUNT),
 		svcAcct,
-		cadence.String(RemoveHexPrefix(privKey.PublicKey().String())),
+		cadence.String(util.RemoveHexPrefix(privKey.PublicKey().String())),
 	).SignAndSend()
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (c *GlowClient) CreateAccount(
 	}
 	addrCdc := cadence.Address(address)
 
-	a := NewAccount(
+	a := model.NewAccount(
 		addrCdc.String(),
 		privKey.String(),
 	)

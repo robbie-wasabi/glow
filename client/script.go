@@ -39,12 +39,12 @@ func (c *GlowClient) NewScFromString(cdc string, args ...cadence.Value) *Sc {
 }
 
 // NewScFromFile creates a new script from a file.
-func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) (*Sc, error) {
+func (c *GlowClient) NewScFromFile(file string, args ...cadence.Value) *Sc {
 	cdc, err := c.CadenceFromFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("sc not found at: %s", file)
+		panic(fmt.Sprintf("Script not found at: %s", file))
 	}
-	return c.newSc(cdc, args...), nil
+	return c.newSc(cdc, args...)
 }
 
 // WithContext adds context to a script.

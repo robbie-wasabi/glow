@@ -21,8 +21,8 @@ import (
 
 	"github.com/rs/zerolog"
 
-	. "github.com/rrossilli/glow/model"
-	. "github.com/rrossilli/glow/tmp"
+	"github.com/rrossilli/glow/model"
+	"github.com/rrossilli/glow/tmp"
 )
 
 // TODO: specify which contracts to deploy
@@ -49,9 +49,9 @@ type GlowClientBuilder struct {
 	SigAlgo      crypto.SignatureAlgorithm
 
 	// network vars
-	LogLvl  int
-	Root    string
-	Network string
+	LogLvl      int
+	Root        string
+	NetworkName string
 }
 
 func (b *GlowClientBuilder) InitAccounts(l bool) *GlowClientBuilder {
@@ -103,7 +103,7 @@ func NewGlowClientBuilder(network, root string, logLvl int) *GlowClientBuilder {
 	}
 
 	return &GlowClientBuilder{
-		Network:      network,
+		NetworkName:  network,
 		InMemory:     inMemory,
 		IniAccts:     initAccounts,
 		DepContracts: depContracts,
@@ -118,13 +118,13 @@ func NewGlowClientBuilder(network, root string, logLvl int) *GlowClientBuilder {
 type GlowClient struct {
 	network  config.Network
 	root     string
-	FlowJSON FlowJSON
+	FlowJSON model.FlowJSON
 	Logger   output.Logger
 	FlowKit  *flowkit.Flowkit
 	State    *flowkit.State
 	HashAlgo crypto.HashAlgorithm
 	SigAlgo  crypto.SignatureAlgorithm
-	SvcAcct  Account
+	SvcAcct  model.Account
 	gasLimit uint64
 }
 
@@ -154,7 +154,7 @@ func NewGlowClient() *GlowClientBuilder {
 }
 
 // source flow.json
-func parseFlowJSON(file string) (flowJSON FlowJSON) {
+func parseFlowJSON(file string) (flowJSON model.FlowJSON) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
 		panic(err)
@@ -183,7 +183,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 	}
 	flowJSON := parseFlowJSON(fJSONPath)
 
-	network, err := state.Networks().ByName(b.Network)
+	network, err := state.Networks().ByName(b.NetworkName)
 	if err != nil {
 		panic(err)
 	}
@@ -212,6 +212,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 			HashAlgo:  b.HashAlgo,
 		}
 		gw := gateway.NewEmulatorGatewayWithOpts(emulatorKey, gateway.WithLogger(&emulatorLogger), gateway.WithEmulatorOptions(emulatorOptions...))
+		// gw := gateway.NewEmulatorGatewayWithOpts(emulatorKey, gateway.WithLogger(&emulatorLogger))
 		// network := config.Network{
 		// 	Name:    b.Network,
 		// 	Host:    "
@@ -227,7 +228,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		fk = flowkit.NewFlowkit(state, *network, gw, logger)
 	}
 
-	svcAcct := flowJSON.GetSvcAcct(b.Network)
+	svcAcct := flowJSON.GetSvcAcct(b.NetworkName)
 
 	wrappedClient := GlowClient{
 		network:  *network,
@@ -287,7 +288,7 @@ func (c *GlowClient) deployContracts() {
 			acct := c.FlowJSON.GetAccount(a)
 			contract := c.GetContractCdc(d)
 			txRes, err := c.NewTxFromString(
-				TX_CONTRACT_DEPLOY,
+				tmp.TX_CONTRACT_DEPLOY,
 				acct,
 				contract.NameAsCadenceString(),
 				cadence.String(hex.EncodeToString(contract.CdcBytes())),

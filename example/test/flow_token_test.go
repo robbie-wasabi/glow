@@ -1,8 +1,9 @@
 package test
 
 import (
-	"fmt"
+	// "fmt"
 
+	"fmt"
 	"testing"
 
 	. "github.com/rrossilli/glow/client"
@@ -15,7 +16,6 @@ import (
 // Test Deposit Flow Tokens from service account into a newly created account
 func TestTransferFlow(t *testing.T) {
 	Convey("Create a client", t, func() {
-
 		// create and start new glow client
 		client := NewGlowClient().Start()
 
