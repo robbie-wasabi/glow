@@ -71,10 +71,7 @@
   "deployments": {
     "emulator": {
       "emulator-svc": [
-        "NonFungibleToken",
         "NFTStorefront",
-        "MetadataViews",
-        "ViewResolver",
         "ExampleNFT"
       ]
     }

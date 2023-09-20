@@ -1,4 +1,4 @@
-package client
+package util
 
 import (
 	"encoding/json"
@@ -53,16 +53,4 @@ func Mapkey(m map[string]interface{}, value interface{}) (key string, ok bool) {
 		}
 	}
 	return
-}
-
-func TxPath(filename string) string {
-	return fmt.Sprintf("%s/%s.cdc", "/transaction", filename)
-}
-
-func ScPath(filename string) string {
-	return fmt.Sprintf("%s/%s.cdc", "/script", filename)
-}
-
-func ContractPath(filename string) string {
-	return fmt.Sprintf("%s/%s.cdc", "/contract", filename)
 }

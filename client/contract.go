@@ -3,15 +3,15 @@ package client
 import (
 	"fmt"
 
-	. "github.com/rrossilli/glow/util"
+	"github.com/rrossilli/glow/util"
 
-	. "github.com/rrossilli/glow/model"
+	"github.com/rrossilli/glow/model"
 )
 
 // Get Contract by name
-func (c *GlowClient) GetContractCdc(name string) ContractCdc {
+func (c *GlowClient) GetContractCdc(name string) model.ContractCdc {
 	contract := c.FlowJSON.GetContract(name)
-	if IsEmpty(contract) {
+	if util.IsEmpty(contract) {
 		panic(fmt.Sprintf("contract not found in flow.json: %s", name))
 	}
 
@@ -20,7 +20,7 @@ func (c *GlowClient) GetContractCdc(name string) ContractCdc {
 		panic(err)
 	}
 
-	return ContractCdc{
+	return model.ContractCdc{
 		Contract: contract,
 		Name:     name,
 		Cdc:      cdc,
