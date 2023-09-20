@@ -1,63 +1,56 @@
 package test
 
 import (
-	// "fmt"
-
 	"fmt"
 	"testing"
 
-	. "github.com/rrossilli/glow/client"
-	. "github.com/rrossilli/glow/util"
-
 	"github.com/onflow/cadence"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/rrossilli/glow/client"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// Test Deposit Flow Tokens from service account into a newly created account
+const (
+	GENERATE_KEYS_SEED_PHRASE = "elephant ears space cowboy octopus rodeo potato cannon pineapple"
+)
+
 func TestTransferFlow(t *testing.T) {
-	Convey("Create a client", t, func() {
-		// create and start new glow client
-		client := NewGlowClient().Start()
+	client := client.NewGlowClient().Start()
+	svc := client.SvcAcct
 
-		// get service account
-		svc := client.SvcAcct
+	// Create a new account on the flow blockchain
+	privKey, err := client.NewPrivateKey(GENERATE_KEYS_SEED_PHRASE)
+	require.Nil(t, err)
+	assert.NotNil(t, privKey)
 
-		Convey("Create a new account on the flow blockchain", func() {
-			privKey, err := client.NewPrivateKey(GENERATE_KEYS_SEED_PHRASE)
-			So(err, ShouldBeNil)
-			So(privKey, ShouldNotBeNil)
+	recipient, err := client.CreateAccount(privKey)
+	require.Nil(t, err)
+	assert.NotNil(t, recipient)
 
-			recipient, err := client.CreateAccount(
-				privKey,
-			)
-			So(err, ShouldBeNil)
-			So(recipient, ShouldNotBeNil)
+	// Deposit flow tokens into the account
+	s := fmt.Sprintf("%v", "10.0")
+	amount, err := cadence.NewUFix64(s)
+	require.Nil(t, err)
 
-			Convey("Deposit flow tokens into the account", func() {
-				s := fmt.Sprintf("%v", "10.0")
-				amount, err := cadence.NewUFix64(s)
-				So(err, ShouldBeNil)
+	txRes, err := client.NewTxFromFile(
+		TxPath("flow_transfer"),
+		svc,
+	).Args(
+		amount,
+		recipient.CadenceAddress(),
+	).SignAndSend()
+	require.Nil(t, err)
+	assert.NotNil(t, txRes)
+	assert.Nil(t, txRes.Error)
 
-				txRes, err := client.NewTxFromFile(
-					TxPath("flow_transfer"),
-					svc,
-				).Args(
-					amount,
-					recipient.CadenceAddress(),
-				).SignAndSend()
-				So(err, ShouldBeNil)
-				So(txRes, ShouldNotBeNil)
-				So(txRes.Error, ShouldBeNil)
+	// Get flow token balance of account
+	result, err := client.NewScFromFile(
+		ScPath("flow_balance"),
+		recipient.CadenceAddress(),
+	).Exec()
+	require.Nil(t, err)
 
-				Convey("Get flow token balance of account", func() {
-					result, err := client.NewScFromFile(
-						ScPath("flow_balance"),
-						recipient.CadenceAddress(),
-					).Exec()
-					So(err, ShouldBeNil)
-					So(result.ToGoValue().(uint64), ShouldBeGreaterThan, 1)
-				})
-			})
-		})
-	})
+	balance, ok := result.ToGoValue().(uint64)
+	assert.True(t, ok)
+	assert.Greater(t, balance, uint64(1))
 }

@@ -25,8 +25,6 @@ import (
 	"github.com/rrossilli/glow/tmp"
 )
 
-// TODO: specify which contracts to deploy
-
 const (
 	ECDSA_P256 = "ECDSA_P256"
 	SHA3_256   = "SHA3_256"
@@ -40,27 +38,25 @@ const (
 	DEFAULT_EMULATOR_SVC_ACCOUNT = "emulator-svc"
 )
 
+// Responsible for building instances of GlowClient.
 type GlowClientBuilder struct {
-	InMemory     bool
-	IniAccts     bool
-	DepContracts bool
-	GasLim       uint64
-	HashAlgo     crypto.HashAlgorithm
-	SigAlgo      crypto.SignatureAlgorithm
-
-	// network vars
-	LogLvl      int
-	Root        string
-	NetworkName string
+	InMemory, ShouldCreateAccounts, ShouldDeployContracts bool
+	GasLim                                                uint64
+	HashAlgo                                              crypto.HashAlgorithm
+	SigAlgo                                               crypto.SignatureAlgorithm
+	LogLvl                                                int
+	Root, NetworkName                                     string
 }
 
-func (b *GlowClientBuilder) InitAccounts(l bool) *GlowClientBuilder {
-	b.IniAccts = l
+// Toggles the account creation feature.
+func (b *GlowClientBuilder) CreateAccounts(l bool) *GlowClientBuilder {
+	b.ShouldCreateAccounts = l
 	return b
 }
 
+// Toggles the contract deployment feature.
 func (b *GlowClientBuilder) DeployContracts(l bool) *GlowClientBuilder {
-	b.DepContracts = l
+	b.ShouldDeployContracts = l
 	return b
 }
 
@@ -84,37 +80,39 @@ func (b *GlowClientBuilder) GasLimit(limit uint64) *GlowClientBuilder {
 	return b
 }
 
+// Initializes a new GlowClientBuilder with default settings.
 func NewGlowClientBuilder(network, root string, logLvl int) *GlowClientBuilder {
 	if network == "" {
 		network = NETWORK_EMBEDDED
 	}
 
 	inMemory := false
-	depContracts := false
-	initAccounts := false
+	shouldDeployContracts := false
+	shouldCreateAccounts := false
 	hashAlgo := crypto.StringToHashAlgorithm(SHA3_256)
 	sigAlgo := crypto.StringToSignatureAlgorithm(ECDSA_P256)
 
 	if network == NETWORK_EMBEDDED {
 		network = NETWORK_EMULATOR
 		inMemory = true
-		depContracts = true
-		initAccounts = true
+		shouldDeployContracts = true
+		shouldCreateAccounts = true
 	}
 
 	return &GlowClientBuilder{
-		NetworkName:  network,
-		InMemory:     inMemory,
-		IniAccts:     initAccounts,
-		DepContracts: depContracts,
-		LogLvl:       logLvl,
-		GasLim:       9999,
-		Root:         root,
-		HashAlgo:     hashAlgo,
-		SigAlgo:      sigAlgo,
+		NetworkName:           network,
+		InMemory:              inMemory,
+		ShouldCreateAccounts:  shouldCreateAccounts,
+		ShouldDeployContracts: shouldDeployContracts,
+		LogLvl:                logLvl,
+		GasLim:                9999,
+		Root:                  root,
+		HashAlgo:              hashAlgo,
+		SigAlgo:               sigAlgo,
 	}
 }
 
+// Encapsulates Flow network interactions.
 type GlowClient struct {
 	network  config.Network
 	root     string
@@ -128,6 +126,7 @@ type GlowClient struct {
 	gasLimit uint64
 }
 
+// Returns the network configuration.
 func (c *GlowClient) GetNetwork() config.Network {
 	return c.network
 }
@@ -153,7 +152,6 @@ func NewGlowClient() *GlowClientBuilder {
 	return c
 }
 
-// source flow.json
 func parseFlowJSON(file string) (flowJSON model.FlowJSON) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
@@ -169,18 +167,18 @@ func parseFlowJSON(file string) (flowJSON model.FlowJSON) {
 	return flowJSON
 }
 
-// Start Client
+// Initializes the GlowClient with the configurations set in the builder.
 func (b *GlowClientBuilder) Start() *GlowClient {
 	logger := output.NewStdoutLogger(b.LogLvl)
-
 	loader := &afero.Afero{Fs: afero.NewOsFs()}
+
 	fJSONPath := fmt.Sprintf("%s/flow.json", b.Root) // assumes that flow.json is at root
-	// fmt.Printf("fJSONPath: %v\n", fJSONPath)
 	state, err := flowkit.Load([]string{fJSONPath}, loader)
 	if err != nil {
 		// logger.Error(fmt.Sprintf("\nFlowkit was unable to load project configuration at path: %s", b.Root))
 		panic(err)
 	}
+
 	flowJSON := parseFlowJSON(fJSONPath)
 
 	network, err := state.Networks().ByName(b.NetworkName)
@@ -188,54 +186,51 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		panic(err)
 	}
 
-	// logger.Info("\n==================================")
-	// logger.Info("STARTING GLOW CLIENT:\n")
-	// logger.Info(fmt.Sprintf("NETWORK: %v", b.Network))
-	// logger.Info(fmt.Sprintf("IN MEMORY: %v", b.InMemory))
-	// logger.Info(fmt.Sprintf("ROOT: %v", b.Root))
+	logger.Info(fmt.Sprintf("\nGlow Client Starting: Network=%v, InMemory=%v, Root=%v", b.NetworkName, b.InMemory, b.Root))
 
-	var fk *flowkit.Flowkit
+	var kit *flowkit.Flowkit
+	var gw gateway.Gateway
 	if b.InMemory {
 		var memlog bytes.Buffer
 		writer := io.Writer(&memlog)
 		emulatorLogger := zerolog.New(writer).Level(zerolog.DebugLevel)
-
-		emulatorOptions := []emulator.Option{
+		emulatorOpts := []emulator.Option{
 			emulator.WithLogger(emulatorLogger),
 		}
 
-		svcAcct, _ := state.EmulatorServiceAccount()
-		pk, _ := svcAcct.Key.PrivateKey()
+		svcAcct, err := state.EmulatorServiceAccount()
+		if err != nil {
+			panic(err)
+		}
+
+		pk, err := svcAcct.Key.PrivateKey()
+		if err != nil {
+			panic(err)
+		}
+
 		emulatorKey := &gateway.EmulatorKey{
 			PublicKey: (*pk).PublicKey(),
 			SigAlgo:   b.SigAlgo,
 			HashAlgo:  b.HashAlgo,
 		}
-		gw := gateway.NewEmulatorGatewayWithOpts(emulatorKey, gateway.WithLogger(&emulatorLogger), gateway.WithEmulatorOptions(emulatorOptions...))
-		// gw := gateway.NewEmulatorGatewayWithOpts(emulatorKey, gateway.WithLogger(&emulatorLogger))
-		// network := config.Network{
-		// 	Name:    b.Network,
-		// 	Host:    "
-		// 	Emulator: true,
-		// }
-		fk = flowkit.NewFlowkit(state, *network, gw, logger)
-		// service = services.NewServices(gw, state, logger)
+
+		gw = gateway.NewEmulatorGatewayWithOpts(emulatorKey, gateway.WithLogger(&emulatorLogger), gateway.WithEmulatorOptions(emulatorOpts...))
 	} else {
-		gw, err := gateway.NewGrpcGateway(*network)
+		gw, err = gateway.NewGrpcGateway(*network)
 		if err != nil {
 			panic(err)
 		}
-		fk = flowkit.NewFlowkit(state, *network, gw, logger)
+
 	}
 
+	kit = flowkit.NewFlowkit(state, *network, gw, logger)
 	svcAcct := flowJSON.GetSvcAcct(b.NetworkName)
-
 	wrappedClient := GlowClient{
 		network:  *network,
 		root:     b.Root,
 		FlowJSON: flowJSON,
 		Logger:   logger,
-		FlowKit:  fk,
+		FlowKit:  kit,
 		State:    state,
 		HashAlgo: b.HashAlgo,
 		SigAlgo:  b.SigAlgo,
@@ -243,22 +238,21 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 		SvcAcct:  svcAcct,
 	}
 
-	if b.IniAccts {
-		wrappedClient.initAccounts()
+	if b.ShouldCreateAccounts {
+		wrappedClient.createAccounts()
 	}
 
-	if b.DepContracts {
+	if b.ShouldDeployContracts {
 		wrappedClient.deployContracts()
 	}
-
-	// logger.Info("==================================")
 
 	return &wrappedClient
 }
 
-// Submit transactions to initialize accounts sourced from flow.json
-func (c *GlowClient) initAccounts() {
-	c.Logger.Info("\nCREATING ACCOUNTS:\n")
+// Initializes accounts on the Flow network
+func (c *GlowClient) createAccounts() {
+	c.Logger.Info("Creating Accounts:")
+
 	accounts := c.FlowJSON.AccountsSorted()
 	for i, a := range accounts {
 		// skip svc account
@@ -273,13 +267,14 @@ func (c *GlowClient) initAccounts() {
 			panic(err)
 		}
 
-		c.Logger.Info(fmt.Sprintf("%s CREATED", acct.Address))
+		c.Logger.Info(fmt.Sprintf("Account=%s Created", acct.Address))
 	}
 }
 
-// Submit transactions to deploy contracts to existing accounts sourced from flow.json
+// Deploys smart contracts to accounts on the Flow network
 func (c *GlowClient) deployContracts() {
-	c.Logger.Info("\nDEPLOYING CONTRACTS:\n")
+	c.Logger.Info("Deploy Contracts:")
+
 	acctNames := c.FlowJSON.AccountNamesSorted(c.network.Name) // sorted list of account names
 	for _, a := range acctNames {
 		d := c.FlowJSON.GetAccountDeployment(c.network.Name, a)
@@ -299,7 +294,7 @@ func (c *GlowClient) deployContracts() {
 			if txRes.Error != nil {
 				panic(txRes.Error)
 			}
-			c.Logger.Info(fmt.Sprintf("%s DEPLOYED", d))
+			c.Logger.Info(fmt.Sprintf("Contract=%s Deployed", d))
 		}
 	}
 }
