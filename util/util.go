@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"unicode/utf8"
 )
 
@@ -53,4 +54,39 @@ func Mapkey(m map[string]interface{}, value interface{}) (key string, ok bool) {
 		}
 	}
 	return
+}
+
+// func (f FlowJSON) ContractNamesSortedByLength(asc bool) []string {
+// 	keys := make([]string, 0, len(f.data.Contracts))
+// 	for k := range f.data.Contracts {
+// 		keys = append(keys, k)
+// 	}
+// 	sort.SliceStable(keys, func(i, j int) bool {
+// 		if asc {
+// 			return len(keys[i]) < len(keys[j])
+// 		} else {
+// 			return len(keys[i]) > len(keys[j])
+// 		}
+// 	})
+// 	return keys
+// }
+
+// sort strings by length
+func SortStringsByCharacterLength(arr []string, asc bool) []string {
+	sort.SliceStable(arr, func(i, j int) bool {
+		if asc {
+			return len(arr[i]) < len(arr[j])
+		}
+		return len(arr[i]) > len(arr[j])
+	})
+	return arr
+}
+
+// get keys from map
+func MapKeys(m map[string]interface{}) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
 }

@@ -162,7 +162,10 @@ func parseFlowJSON(file string) (flowJSON model.FlowJSON) {
 	if err != nil {
 		panic(err)
 	}
-	json.Unmarshal(byteValue, &flowJSON)
+	var flowJSONData interface{}
+	json.Unmarshal(byteValue, &flowJSONData)
+
+	fmt.Printf("flowJSON: %v\n", flowJSON)
 
 	return flowJSON
 }
@@ -224,7 +227,7 @@ func (b *GlowClientBuilder) Start() *GlowClient {
 	}
 
 	kit = flowkit.NewFlowkit(state, *network, gw, logger)
-	svcAcct := flowJSON.GetSvcAcct(b.NetworkName)
+	svcAcct := flowJSON.ServiceAccount(b.NetworkName)
 	wrappedClient := GlowClient{
 		network:  *network,
 		root:     b.Root,
@@ -276,12 +279,24 @@ func (c *GlowClient) deployContracts() {
 	c.Logger.Info("Deploy Contracts:")
 
 	acctNames := c.FlowJSON.AccountNamesSorted(c.network.Name) // sorted list of account names
+
+	fmt.Println("===============")
+	fmt.Println(acctNames)
+	fmt.Println("===============")
+
 	for _, a := range acctNames {
-		d := c.FlowJSON.GetAccountDeployment(c.network.Name, a)
-		for _, d := range d {
+
+		deployment := c.FlowJSON.Deployment(c.network.Name)
+		fmt.Println("===============")
+		fmt.Println(deployment)
+		fmt.Println("===============")
+
+		contracts := deployment.ContractNames(a)
+		// d := c.FlowJSON.GetAccountDeployment(c.network.Name, a)
+		for _, ct := range contracts {
 			// get acct and deploy contract
-			acct := c.FlowJSON.GetAccount(a)
-			contract := c.GetContractCdc(d)
+			acct := c.FlowJSON.Account(a)
+			contract := c.GetContractCdc(ct)
 			txRes, err := c.NewTxFromString(
 				tmp.TX_CONTRACT_DEPLOY,
 				acct,
@@ -294,7 +309,7 @@ func (c *GlowClient) deployContracts() {
 			if txRes.Error != nil {
 				panic(txRes.Error)
 			}
-			c.Logger.Info(fmt.Sprintf("Contract=%s Deployed", d))
+			c.Logger.Info(fmt.Sprintf("Contract=%s Deployed", ct))
 		}
 	}
 }

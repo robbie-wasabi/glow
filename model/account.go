@@ -5,7 +5,7 @@ import (
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 
-	. "github.com/rrossilli/glow/util"
+	"github.com/rrossilli/glow/util"
 )
 
 // Account struct as it typically appears in a flow.json
@@ -41,7 +41,7 @@ func (a Account) CadenceAddress() cadence.Address {
 
 // Crypto private key
 func (a Account) CryptoPrivateKey() crypto.PrivateKey {
-	key, err := crypto.DecodePrivateKeyHex(crypto.ECDSA_P256, RemoveHexPrefix(a.PrivKey))
+	key, err := crypto.DecodePrivateKeyHex(crypto.ECDSA_P256, util.RemoveHexPrefix(a.PrivKey))
 	if err != nil {
 		panic(err)
 	}

@@ -41,7 +41,7 @@ func (c *GlowClient) CreateDisposableAccount() (*model.Account, error) {
 func (c *GlowClient) CreateAccount(
 	privKey crypto.PrivateKey,
 ) (*model.Account, error) {
-	svcAcct := c.FlowJSON.GetSvcAcct(c.network.Name)
+	svcAcct := c.FlowJSON.ServiceAccount(c.network.Name)
 	txRes, err := c.NewTx(
 		[]byte(tmp.TX_CREATE_ACCOUNT),
 		svcAcct,

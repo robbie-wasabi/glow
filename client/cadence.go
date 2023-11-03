@@ -22,18 +22,31 @@ func (c *GlowClient) CadenceFromFile(file string) (string, error) {
 	return editedCdc, nil
 }
 
-// Replaces "0x" imports and file import paths in cadence with addresses from specified flow.json
+// Replace "0x" imports and file import paths in cadence with addresses from specified flow.json
 func (c *GlowClient) replaceImportAddresses(cdc string) string {
+
+	// Replace file import paths
 	lines := strings.Split(string(cdc), "\n")
 	for i, line := range lines {
 		lines[i] = replaceFileImportPath(line)
 	}
 	newCdc := strings.Join(lines, "\n")
 
-	// replace 0x imports i.e. "import Contract from 0xContract"
-	keys := c.FlowJSON.ContractNamesSortedByLength(false)
-	for _, key := range keys {
-		co := c.FlowJSON.Contracts[key]
+	// map to contract names
+	contracts := c.FlowJSON.Contracts()
+	var contractNames []string
+	for cn := range contracts {
+		contractNames = append(contractNames, cn)
+	}
+
+	// sort contract names by length (longest first) so that we replace the longest
+	// contract names first. This is to avoid replacing a contract name that is a
+	// substring of another contract name
+	contractNamesSorted := util.SortStringsByCharacterLength(contractNames, false)
+
+	// replace 0x imports
+	for _, key := range contractNamesSorted {
+		co := c.FlowJSON.Contract(key)
 		newCdc = strings.Replace(
 			newCdc,
 			util.PrependHexPrefix(key),
