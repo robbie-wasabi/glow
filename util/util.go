@@ -8,70 +8,54 @@ import (
 	"unicode/utf8"
 )
 
-// remove first char of string
+// RemoveFirstChar returns a string without its first character.
 func RemoveFirstChar(s string) string {
 	_, i := utf8.DecodeRuneInString(s)
 	return s[i:]
 }
 
-// pretty print a struct
-func PPrint(m interface{}) {
-	j, err := json.MarshalIndent(m, "", "    ")
+// PPrint pretty-prints any value as indented JSON.
+func PPrint(v interface{}) {
+	j, err := json.MarshalIndent(v, "", "    ")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(string(j))
 }
 
-// remove "0x" from beginning of string
+// RemoveHexPrefix returns s without a leading "0x".
 func RemoveHexPrefix(s string) string {
-	if s[:2] == "0x" {
+	if len(s) > 1 && s[:2] == "0x" {
 		return s[2:]
 	}
 	return s
 }
 
-// prepend "0x" to beginning of string
+// PrependHexPrefix returns s prefixed with "0x" if it's not already.
 func PrependHexPrefix(s string) string {
-	if s[:2] == "0x" {
+	if len(s) > 1 && s[:2] == "0x" {
 		return s
 	}
 	return "0x" + s
 }
 
-// check if the value of a struct is empty
+// IsEmpty returns true if i's value is a zero value.
 func IsEmpty(i interface{}) bool {
 	return reflect.ValueOf(i).IsZero()
 }
 
-// get key based on value
-func Mapkey(m map[string]interface{}, value interface{}) (key string, ok bool) {
+// Mapkey returns the first key in m whose value matches value.
+func Mapkey(m map[string]interface{}, value interface{}) (string, bool) {
 	for k, v := range m {
 		if v == value {
-			key = k
-			ok = true
-			return
+			return k, true
 		}
 	}
-	return
+	return "", false
 }
 
-// func (f FlowJSON) ContractNamesSortedByLength(asc bool) []string {
-// 	keys := make([]string, 0, len(f.data.Contracts))
-// 	for k := range f.data.Contracts {
-// 		keys = append(keys, k)
-// 	}
-// 	sort.SliceStable(keys, func(i, j int) bool {
-// 		if asc {
-// 			return len(keys[i]) < len(keys[j])
-// 		} else {
-// 			return len(keys[i]) > len(keys[j])
-// 		}
-// 	})
-// 	return keys
-// }
-
-// sort strings by length
+// SortStringsByCharacterLength sorts arr by string length.
+// If asc is true, results are ascending; otherwise descending.
 func SortStringsByCharacterLength(arr []string, asc bool) []string {
 	sort.SliceStable(arr, func(i, j int) bool {
 		if asc {
@@ -82,7 +66,7 @@ func SortStringsByCharacterLength(arr []string, asc bool) []string {
 	return arr
 }
 
-// get keys from map
+// MapKeys returns all keys from map m.
 func MapKeys(m map[string]interface{}) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {

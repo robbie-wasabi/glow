@@ -10,12 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestMintNFT verifies NFT minting and transferring between accounts.
 func TestMintNFT(t *testing.T) {
-	client := client.NewGlowClient().Start()
-	minter := client.SvcAcct
+	c := client.NewGlowClient().Start()
+	minter := c.SvcAcct
 
-	// Set up royalty
-	txRes, err := client.NewTxFromFile(
+	// Set up a royalty vault in the minter’s account.
+	txRes, err := c.NewTxFromFile(
 		TxPath("account_setup_royalty"),
 		minter,
 		cadence.Path{
@@ -23,11 +24,11 @@ func TestMintNFT(t *testing.T) {
 			Identifier: "flowTokenVault",
 		},
 	).SignAndSend()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, txRes)
 
-	// Mint NFTs
-	txRes, err = client.NewTxFromFile(
+	// Mint an NFT.
+	txRes, err = c.NewTxFromFile(
 		TxPath("nft_mint"),
 		minter,
 	).Args(
@@ -39,36 +40,37 @@ func TestMintNFT(t *testing.T) {
 		cadence.NewArray([]cadence.Value{cadence.String("royalty description")}),
 		cadence.NewArray([]cadence.Value{minter.CadenceAddress()}),
 	).SignAndSend()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, txRes)
 
-	// Create a collector account
-	collector, err := client.CreateDisposableAccount()
-	require.Nil(t, err)
+	// Create a disposable collector account and set it up for NFTs.
+	collector, err := c.CreateDisposableAccount()
+	require.NoError(t, err)
 	assert.NotNil(t, collector)
 
-	txRes, err = client.NewTxFromFile(
+	txRes, err = c.NewTxFromFile(
 		TxPath("account_setup"),
 		*collector,
 	).SignAndSend()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, txRes)
 
-	// Transfer NFT from minter to collector
-	txRes, err = client.NewTxFromFile(
+	// Transfer the newly minted NFT to the collector.
+	txRes, err = c.NewTxFromFile(
 		TxPath("nft_transfer"),
 		minter,
 		collector.CadenceAddress(),
 		cadence.UInt64(0),
 	).SignAndSend()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, txRes)
 
-	nft, err := client.NewScFromFile(
+	// Verify that the collector can borrow the NFT.
+	nft, err := c.NewScFromFile(
 		ScPath("nft_borrow"),
 		collector.CadenceAddress(),
 		cadence.UInt64(0),
 	).Exec()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, nft)
 }

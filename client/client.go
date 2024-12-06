@@ -60,21 +60,25 @@ func (b *GlowClientBuilder) DeployContracts(l bool) *GlowClientBuilder {
 	return b
 }
 
+// HashAlgorithm sets the hashing algorithm used by the client.
 func (b *GlowClientBuilder) HashAlgorithm(algo string) *GlowClientBuilder {
 	b.HashAlgo = crypto.StringToHashAlgorithm(algo)
 	return b
 }
 
+// SigAlgorithm sets the signature algorithm used by the client.
 func (b *GlowClientBuilder) SigAlgorithm(algo string) *GlowClientBuilder {
 	b.SigAlgo = crypto.StringToSignatureAlgorithm(algo)
 	return b
 }
 
+// LogLevel sets the logging verbosity level.
 func (b *GlowClientBuilder) LogLevel(level int) *GlowClientBuilder {
 	b.LogLvl = level
 	return b
 }
 
+// GasLimit sets the default transaction gas limit.
 func (b *GlowClientBuilder) GasLimit(limit uint64) *GlowClientBuilder {
 	b.GasLim = limit
 	return b
@@ -131,6 +135,7 @@ func (c *GlowClient) GetNetwork() config.Network {
 	return c.network
 }
 
+// NewGlowClient initializes a builder from environment variables.
 func NewGlowClient() *GlowClientBuilder {
 	network := os.Getenv("GLOW_NETWORK")
 	root := os.Getenv("GLOW_ROOT")
@@ -152,6 +157,7 @@ func NewGlowClient() *GlowClientBuilder {
 	return c
 }
 
+// parseFlowJSON loads and unmarshals the flow.json file.
 func parseFlowJSON(file string) (flowJSON model.FlowJSON) {
 	jsonFile, err := os.Open(file)
 	if err != nil {

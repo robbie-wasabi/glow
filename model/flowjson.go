@@ -9,10 +9,10 @@ import (
 	"github.com/rrossilli/glow/util"
 )
 
-// Maps to a standard flow.json
+// FlowJSON maps a standard flow.json structure.
 type FlowJSON struct {
 	data struct {
-		Emulator    interface{}           `json:"emulators"` // todo
+		Emulator    interface{}           `json:"emulators"`
 		Contracts   map[string]Contract   `json:"contracts"`
 		Networks    map[string]string     `json:"networks"`
 		Accounts    map[string]Account    `json:"accounts"`
@@ -20,71 +20,33 @@ type FlowJSON struct {
 	}
 }
 
-// construct FlowJSON from json bytes
-// func NewFlowJSON(b []byte) (FlowJSON, error) {
-// 	var f FlowJSON
-// 	err := util.UnmarshalJSON(b, &f)
-// 	if err != nil {
-// 		return f, err
-// 	}
-// 	return f, nil
-// }
-
+// FromBytes unmarshals FlowJSON from JSON bytes.
 func (f FlowJSON) FromBytes(b []byte) (FlowJSON, error) {
 	err := json.Unmarshal(b, &f)
-	if err != nil {
-		return f, err
-	}
-	return f, nil
+	return f, err
 }
 
+// Contract returns the named contract.
 func (f FlowJSON) Contract(name string) Contract {
 	return f.data.Contracts[name]
 }
 
-// Get contracts
+// Contracts returns all defined contracts.
 func (f FlowJSON) Contracts() map[string]Contract {
 	return f.data.Contracts
 }
 
-// Names of contracts
-// func (f FlowJSON) ContractNames() []string {
-// 	keys := make([]string, 0, len(f.data.Contracts))
-// 	for k := range f.data.Contracts {
-// 		keys = append(keys, k)
-// 	}
-// 	return keys
-// }
-
-// Sort contract names by length. Helpful for replacing import Addresses
-// in scripts
-// func (f FlowJSON) ContractNamesSortedByLength(asc bool) []string {
-// 	keys := make([]string, 0, len(f.data.Contracts))
-// 	for k := range f.data.Contracts {
-// 		keys = append(keys, k)
-// 	}
-// 	sort.SliceStable(keys, func(i, j int) bool {
-// 		if asc {
-// 			return len(keys[i]) < len(keys[j])
-// 		} else {
-// 			return len(keys[i]) > len(keys[j])
-// 		}
-// 	})
-// 	return keys
-// }
-
-// Get service account (account with "svc" suffix)
+// ServiceAccount returns the service account for the given network.
 func (f FlowJSON) ServiceAccount(network string) Account {
 	return f.Account(fmt.Sprintf("%s-svc", network))
 }
 
-// Get account by name
+// Account returns the account by name.
 func (f FlowJSON) Account(name string) Account {
-	account := f.data.Accounts[name]
-	return account
+	return f.data.Accounts[name]
 }
 
-// Get Accounts for network
+// Accounts returns all accounts for a given network.
 func (f FlowJSON) Accounts(network string) map[string]Account {
 	accounts := map[string]Account{}
 	for n, a := range f.data.Accounts {
@@ -95,12 +57,12 @@ func (f FlowJSON) Accounts(network string) map[string]Account {
 	return accounts
 }
 
-// Sort accounts for network by predetermined emulator address order.
+// AccountsSorted returns emulator accounts in the predefined order.
 func (f FlowJSON) AccountsSorted() []Account {
 	var sorted []Account
-	for _, o := range consts.EMULATOR_ADDRESS_ORDER {
+	for _, addr := range consts.EMULATOR_ADDRESS_ORDER {
 		for _, a := range f.data.Accounts {
-			if util.PrependHexPrefix(a.Address) == util.PrependHexPrefix(o) {
+			if util.PrependHexPrefix(a.Address) == util.PrependHexPrefix(addr) {
 				sorted = append(sorted, a)
 			}
 		}
@@ -108,15 +70,13 @@ func (f FlowJSON) AccountsSorted() []Account {
 	return sorted
 }
 
-// Helper function to sort account names for network by predetermined emulator address order.
+// AccountNamesSorted returns emulator account names in the predefined order.
 func (f FlowJSON) AccountNamesSorted(network string) []string {
 	var sorted []string
-	for _, o := range consts.EMULATOR_ADDRESS_ORDER {
+	for _, addr := range consts.EMULATOR_ADDRESS_ORDER {
 		fmt.Printf("f.data.Accounts: %v\n", f.data.Accounts)
 		for n, a := range f.data.Accounts {
-			if util.PrependHexPrefix(a.Address) == util.PrependHexPrefix(o) {
-				// name := strings.ReplaceAll(n, fmt.Sprintf("%s-", network), "")
-				// sorted = append(sorted, name)
+			if util.PrependHexPrefix(a.Address) == util.PrependHexPrefix(addr) {
 				sorted = append(sorted, n)
 			}
 		}
@@ -124,7 +84,7 @@ func (f FlowJSON) AccountNamesSorted(network string) []string {
 	return sorted
 }
 
+// Deployment returns the deployment configuration for the given network.
 func (f FlowJSON) Deployment(network string) Deployment {
-	deployment := f.data.Deployments[network]
-	return deployment
+	return f.data.Deployments[network]
 }
