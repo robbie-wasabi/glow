@@ -1,5 +1,7 @@
 # Glow
 
+_now sponsored by FLOW!_
+
 Glow is a comprehensive Golang library designed to streamline the development, testing, and deployment of Flow smart contracts, transactions, and scripts across various Flow networks. By leveraging a configuration-driven architecture, Glow simplifies account creation, contract deployment, and state management, allowing developers to interact with the Flow blockchain through a consistent, programmatic interface.
 
 Originally conceived as a personal passion project, Glow seeks to alleviate common pain points encountered during Flow smart contract development. With inspiration drawn from [bjartek/overflow](https://github.com/bjartek/overflow), Glow aspires to be a valuable resource for testing contracts and workflows, providing a well-structured and easily extensible toolkit.
